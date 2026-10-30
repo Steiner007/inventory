@@ -1,0 +1,797 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ASR Plumbing Inventory</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: sticky header (location switch, big search, category chips), compact result rows that expand into one-tap stock buttons, fixed bottom tabs. Brass accent; stock colors are semantic. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#14202B; --muted:#56626F; --line:#D3DAE1;
+  --accent:#8F5F00; --accent-bg:#F6E7C4; --accent-ink:#FFFFFF; --focus:#1D5FD1; --scrim:rgba(10,18,26,.5);
+  --extra:#1E5DBA; --extra-ink:#FFFFFF; --stocked:#1B7337; --stocked-ink:#FFFFFF; --half:#F0C232; --half-ink:#2B2000;
+  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --warn-bg:#FFF2D6; --warn-ink:#6B4600;
+  --ok:#1B7337; --danger:#B0241C;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px; --nav-h:62px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
+  --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
+  --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --ok:#45B86A; --danger:#F06B60; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
+  --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
+  --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --ok:#45B86A; --danger:#F06B60; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding-block:10px 8px}
+.title{flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
+.title small{display:block;font-family:var(--f-body);font-weight:600;font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.seg{display:flex;flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{flex:1;min-height:42px;border:0;background:transparent;border-radius:999px;font-weight:700;font-size:17px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.sync{flex:none;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;min-height:42px;padding:0 11px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--ok)} .dot.wait{background:var(--half)} .dot.off{background:var(--out)}
+.search{position:relative;padding-block:0 8px}
+.search input{width:100%;min-height:52px;border:2px solid var(--line);background:var(--surface-2);border-radius:12px;padding:0 48px 0 14px;font-size:18px}
+.search input:focus{border-color:var(--accent);outline:none}
+.search .clr{position:absolute;right:4px;top:4px;width:44px;height:44px;border:0;background:transparent;font-size:24px;color:var(--muted);border-radius:10px}
+.rail{display:flex;gap:6px;overflow-x:auto;padding-block:0 10px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:38px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:0 13px;font-weight:600;font-size:15px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.chip .c{color:var(--muted);font-weight:500;margin-left:4px;font-size:13px;font-variant-numeric:tabular-nums}
+
+main{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 90px)}
+.banner{margin-top:12px;background:var(--warn-bg);color:var(--warn-ink);border-radius:var(--r);padding:10px 12px;font-size:14px;font-weight:500;display:flex;flex-direction:column;gap:8px}
+.banner .btnrow{gap:6px}
+.summary{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-block:10px 6px;color:var(--muted);font-size:14px;min-height:44px}
+.ghead{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 2px 6px}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.open{background:var(--surface-2)}
+.rbtn{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;border:0;background:transparent;text-align:left;padding:8px 12px}
+.size{flex:none;font-family:var(--f-mono);font-weight:600;font-size:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 6px;line-height:1.2;white-space:nowrap}
+.row.open .size{background:var(--surface)}
+.nm{flex:1;min-width:0;font-weight:600;font-size:16.5px;line-height:1.25}
+.nm .cat{display:block;font-weight:500;font-size:13px;color:var(--muted)}
+.right{flex:none;display:flex;align-items:center;gap:6px}
+.flg{color:var(--flag);font-size:18px;line-height:1}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:13.5px;font-weight:700;white-space:nowrap;min-width:64px;justify-content:center}
+.pill.Extra{background:var(--extra);color:var(--extra-ink)} .pill.Stocked{background:var(--stocked);color:var(--stocked-ink)} .pill.Half{background:var(--half);color:var(--half-ink)}
+.pill.Low{background:var(--low);color:var(--low-ink)} .pill.Out{background:var(--out);color:var(--out-ink)} .pill.None{border:1.5px dashed var(--muted);color:var(--muted);padding:2px 9px}
+.pill.Hidden{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+.selbox{flex:none;width:26px;height:26px;accent-color:var(--accent);pointer-events:none}
+.acts{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.lv{min-height:50px;border:1.5px solid var(--line);background:var(--surface);border-radius:9px;font-weight:700;font-size:14.5px;color:var(--ink);padding:0 2px}
+.lv[data-lv="Extra"][aria-pressed="true"]{background:var(--extra);border-color:var(--extra);color:var(--extra-ink)}
+.lv[data-lv="Stocked"][aria-pressed="true"]{background:var(--stocked);border-color:var(--stocked);color:var(--stocked-ink)}
+.lv[data-lv="Half"][aria-pressed="true"]{background:var(--half);border-color:var(--half);color:var(--half-ink)}
+.lv[data-lv="Low"][aria-pressed="true"]{background:var(--low);border-color:var(--low);color:var(--low-ink)}
+.lv[data-lv="Out"][aria-pressed="true"]{background:var(--out);border-color:var(--out);color:var(--out-ink)}
+.minor{display:flex;gap:6px;flex-wrap:wrap}
+.minor .btn{flex:1}
+.btn{min-height:44px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:0 14px;font-weight:700;font-size:15px}
+.btn.sm{min-height:40px;padding:0 11px;font-size:14px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.go{background:var(--stocked);border-color:var(--stocked);color:var(--stocked-ink)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.btn.ghost{background:transparent}
+.btn[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.btn:disabled{opacity:.5}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.addbig{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin-top:12px;border:2px dashed var(--accent);background:var(--surface);border-radius:12px;font-weight:700;font-size:16px;color:var(--ink);padding:8px 14px;text-align:center}
+.addbig .plus{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:22px;line-height:1}
+.hidmatch{margin-top:10px;width:100%;min-height:44px;border:1px solid var(--line);background:transparent;border-radius:var(--r);color:var(--muted);font-weight:600;font-size:14px}
+.more{padding:18px;text-align:center;color:var(--muted)}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:22px 16px;text-align:center;color:var(--muted);margin-top:12px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty h3{margin:0;color:var(--ink);font-family:var(--f-display);font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.empty p{margin:0;max-width:42ch}
+
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.sec h2{margin:0;font-family:var(--f-display);font-size:20px;text-transform:uppercase;letter-spacing:.04em}
+.sec p{margin:0;color:var(--muted);font-size:14.5px;max-width:65ch}
+.sec ol{margin:0;padding-left:20px;color:var(--muted);font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14.5px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600}
+.conf{border:1px solid var(--line);border-left:4px solid var(--half);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.upd{font-size:12.5px;color:var(--muted)}
+.req{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px}
+.req .k{font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.req .k.low{color:var(--low)} .req .k.need{color:var(--extra)} .req .k.other{color:var(--muted)}
+.req .txt{font-size:16px}
+.req .item{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.req.closed{opacity:.7}
+.stat{font-size:12.5px;font-weight:700;border-radius:999px;padding:2px 8px;border:1px solid var(--line)}
+.stat.open{border-color:var(--half)} .stat.done{border-color:var(--ok);color:var(--ok)}
+.reqlist{display:flex;flex-direction:column;gap:8px}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs button{flex:1;min-height:var(--nav-h);border:0;background:transparent;font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);position:relative;padding:0 2px}
+nav.tabs button[aria-current="page"]{color:var(--ink);box-shadow:inset 0 3px 0 var(--accent)}
+nav.tabs .lb{position:relative;display:inline-block}
+nav.tabs .badge{position:absolute;top:-11px;right:-15px;background:var(--out);color:var(--out-ink);font-family:var(--f-body);font-size:11.5px;border-radius:999px;min-width:19px;height:19px;display:inline-grid;place-items:center;padding:0 5px;letter-spacing:0}
+.selbar{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));z-index:21;background:var(--ink);color:var(--surface);display:flex;gap:6px;align-items:center;padding-block:10px;flex-wrap:wrap}
+.selbar .t{flex:1;font-weight:700;min-width:90px}
+.selbar .btn{background:transparent;color:var(--surface);border-color:currentColor}
+.selbar .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding-block:14px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain}
+.sheet h2{margin:0;font-family:var(--f-display);font-size:24px;text-transform:uppercase;letter-spacing:.03em}
+.sheet .hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.x{flex:none;width:44px;height:44px;border:0;background:var(--surface-2);border-radius:50%;font-size:22px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field > label,.field > .lab{font-weight:600;font-size:14px}
+.field input,.field select,.field textarea{min-height:48px;border:1px solid var(--line);background:var(--surface-2);border-radius:var(--r);padding:8px 10px;font-size:16.5px;width:100%}
+.field textarea{min-height:84px;resize:vertical}
+.hint{font-size:12.5px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips .chip{min-height:36px;font-family:var(--f-mono);font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two > *{min-width:0}
+.err{color:var(--danger);font-weight:600;font-size:14px}
+.stick{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom,0px));background:var(--surface);padding-block:8px calc(16px + env(safe-area-inset-bottom,0px));margin-bottom:calc(-16px - env(safe-area-inset-bottom,0px))}
+.linkbtn{border:0;background:transparent;color:var(--accent);font-weight:700;text-decoration:underline;padding:4px 0;min-height:36px;text-align:left}
+
+.start{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;justify-content:center;gap:14px;padding-block:24px}
+.start h1{margin:0 0 6px;font-family:var(--f-display);font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
+.start p{margin:0;color:var(--muted)}
+.big{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:20px 18px;min-height:116px}
+.big .t{font-family:var(--f-display);font-weight:700;font-size:32px;text-transform:uppercase;letter-spacing:.02em}
+.big .s{color:var(--muted);font-size:15px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);z-index:60;background:var(--ink);color:var(--surface);border-radius:999px;padding:10px 16px;font-weight:600;font-size:14.5px;width:max-content;max-width:calc(100% - 32px);text-align:center;display:flex;gap:12px;align-items:center}
+.toast button{border:0;background:transparent;color:var(--accent);font-weight:700;text-decoration:underline;min-height:32px}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .16s ease-out}@keyframes up{from{transform:translateY(20px)}}}
+@media (min-width:700px){ main,.top .inner{max-width:760px;margin-inline:auto} .scrim{align-items:center} .sheet{border-radius:16px;max-height:86%} .stick{position:static;margin:0;padding-bottom:0} }
+@media (max-width:360px){ .lv{font-size:13px} nav.tabs button{font-size:14.5px} }
+</style>
+
+<header class="top"><div class="inner wrap">
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Inventory" id="locSeg">
+      <button id="locVan" type="button" aria-pressed="true">Van</button>
+      <button id="locShop" type="button" aria-pressed="false">Shop</button>
+    </div>
+    <div class="title" id="viewerTitle" hidden>Shop inventory<small>ASR Plumbing · view only</small></div>
+    <button class="sync" id="syncBtn" type="button" aria-label="Sync status"><span class="dot" id="syncDot"></span><span id="syncTxt">…</span></button>
+  </div>
+  <div id="searchHead">
+    <div class="search"><input id="q" type="search" enterkeyhint="search" placeholder="Search: 1/2 pex 90, half inch tee…" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search items"><button class="clr" id="qClr" type="button" aria-label="Clear search" hidden>×</button></div>
+    <div class="rail" id="rail" aria-label="Categories"></div>
+  </div>
+</div></header>
+
+<main class="wrap" id="main">
+  <section id="vStock"></section>
+  <section id="vRefill" hidden></section>
+  <section id="vReq" hidden></section>
+  <section id="vMore" hidden></section>
+</main>
+
+<div class="selbar wrap" id="selbar" hidden>
+  <span class="t" id="selN">0 selected</span>
+  <button class="btn sm" id="selAll" type="button">All shown</button>
+  <button class="btn sm" id="selLevel" type="button">Set level</button>
+  <button class="btn sm pri" id="selMain" type="button">Hide</button>
+  <button class="btn sm" id="selDone" type="button">Done</button>
+</div>
+
+<nav class="tabs" aria-label="Sections" id="tabs"></nav>
+
+<div id="startScreen" class="start wrap" hidden>
+  <div><h1>Plumbing Inventory</h1><p>Pick an inventory. You can switch any time from the top bar.</p></div>
+  <button class="big" type="button" data-start="van"><span class="t">Van</span><span class="s" id="stVan"></span></button>
+  <button class="big" type="button" data-start="shop"><span class="t">Shop</span><span class="s" id="stShop"></span></button>
+</div>
+<div id="modal"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script id="catalog" type="application/json">{"cats":["PVC DWV Sch 40","PVC Sch 30 thin-wall","Copper press","Uponor PEX / ProPEX","Black gas fittings","Tubular and traps","Toilet parts","Supply lines and stops","Valves and water supplies","Drain and vent accessories","Water heater and appliances","Consumables and fasteners","Tools and equipment"],"items":[[0,"1-1/2","Pipe, 10 ft","","PVC","Sch 40",0],[0,"1-1/2","90 elbow, hub","","PVC","Sch 40",0],[0,"1-1/2","90 street elbow","","PVC","Sch 40",0],[0,"1-1/2","Long sweep 90","","PVC","Sch 40",0],[0,"1-1/2","45 elbow, hub","","PVC","Sch 40",0],[0,"1-1/2","45 street elbow","","PVC","Sch 40",0],[0,"1-1/2","22-1/2 elbow","","PVC","Sch 40",0],[0,"1-1/2","22-1/2 street elbow","","PVC","Sch 40",0],[0,"1-1/2","Coupling","","PVC","Sch 40",0],[0,"1-1/2","Repair coupling, no stop","","PVC","Sch 40",0],[0,"1-1/2","Sanitary tee","","PVC","Sch 40",0],[0,"1-1/2","Wye","","PVC","Sch 40",0],[0,"1-1/2","Combination wye and 1/8 bend","","PVC","Sch 40",0],[0,"1-1/2","Double wye","","PVC","Sch 40",0],[0,"1-1/2","Double fixture fitting","","PVC","Sch 40",0],[0,"1-1/2","Cleanout adapter with plug","","PVC","Sch 40",0],[0,"1-1/2","Female adapter","","PVC","Sch 40",0],[0,"1-1/2","Male adapter","","PVC","Sch 40",0],[0,"1-1/2","Cap","","PVC","Sch 40",0],[0,"1-1/2","Test plug","","PVC","Sch 40",0],[0,"2","Pipe, 10 ft","","PVC","Sch 40",0],[0,"2","90 elbow, hub","","PVC","Sch 40",0],[0,"2","90 street elbow","","PVC","Sch 40",0],[0,"2","Long sweep 90","","PVC","Sch 40",0],[0,"2","45 elbow, hub","","PVC","Sch 40",0],[0,"2","45 street elbow","","PVC","Sch 40",0],[0,"2","22-1/2 elbow","","PVC","Sch 40",0],[0,"2","22-1/2 street elbow","","PVC","Sch 40",0],[0,"2","Coupling","","PVC","Sch 40",0],[0,"2","Repair coupling, no stop","","PVC","Sch 40",0],[0,"2","Sanitary tee","","PVC","Sch 40",0],[0,"2","Wye","","PVC","Sch 40",0],[0,"2","Combination wye and 1/8 bend","","PVC","Sch 40",0],[0,"2","Double wye","","PVC","Sch 40",0],[0,"2","Double fixture fitting","","PVC","Sch 40",0],[0,"2","Cleanout adapter with plug","","PVC","Sch 40",0],[0,"2","Female adapter","","PVC","Sch 40",0],[0,"2","Male adapter","","PVC","Sch 40",0],[0,"2","Cap","","PVC","Sch 40",0],[0,"2","Test plug","","PVC","Sch 40",0],[0,"3","Pipe, 10 ft","","PVC","Sch 40",0],[0,"3","90 elbow, hub","","PVC","Sch 40",0],[0,"3","90 street elbow","","PVC","Sch 40",0],[0,"3","Long sweep 90","","PVC","Sch 40",0],[0,"3","45 elbow, hub","","PVC","Sch 40",0],[0,"3","45 street elbow","","PVC","Sch 40",0],[0,"3","22-1/2 elbow","","PVC","Sch 40",0],[0,"3","22-1/2 street elbow","","PVC","Sch 40",0],[0,"3","Coupling","","PVC","Sch 40",0],[0,"3","Repair coupling, no stop","","PVC","Sch 40",0],[0,"3","Sanitary tee","","PVC","Sch 40",0],[0,"3","Wye","","PVC","Sch 40",0],[0,"3","Combination wye and 1/8 bend","","PVC","Sch 40",0],[0,"3","Double wye","","PVC","Sch 40",0],[0,"3","Double fixture fitting","","PVC","Sch 40",0],[0,"3","Cleanout adapter with plug","","PVC","Sch 40",0],[0,"3","Female adapter","","PVC","Sch 40",0],[0,"3","Male adapter","","PVC","Sch 40",0],[0,"3","Cap","","PVC","Sch 40",0],[0,"3","Test plug","","PVC","Sch 40",0],[0,"4","Pipe, 10 ft","","PVC","Sch 40",0],[0,"4","90 elbow, hub","","PVC","Sch 40",0],[0,"4","90 street elbow","","PVC","Sch 40",0],[0,"4","Long sweep 90","","PVC","Sch 40",0],[0,"4","45 elbow, hub","","PVC","Sch 40",0],[0,"4","45 street elbow","","PVC","Sch 40",0],[0,"4","22-1/2 elbow","","PVC","Sch 40",0],[0,"4","22-1/2 street elbow","","PVC","Sch 40",0],[0,"4","Coupling","","PVC","Sch 40",0],[0,"4","Repair coupling, no stop","","PVC","Sch 40",0],[0,"4","Sanitary tee","","PVC","Sch 40",0],[0,"4","Wye","","PVC","Sch 40",0],[0,"4","Combination wye and 1/8 bend","","PVC","Sch 40",0],[0,"4","Double wye","","PVC","Sch 40",0],[0,"4","Double fixture fitting","","PVC","Sch 40",0],[0,"4","Cleanout adapter with plug","","PVC","Sch 40",0],[0,"4","Female adapter","","PVC","Sch 40",0],[0,"4","Male adapter","","PVC","Sch 40",0],[0,"4","Cap","","PVC","Sch 40",0],[0,"4","Test plug","","PVC","Sch 40",0],[0,"2 x 1-1/2","Reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"2 x 1-1/2","Reducing sanitary tee","Verify branch configuration","PVC","Sch 40",0],[0,"2 x 1-1/2","Reducing combination wye","Verify branch configuration","PVC","Sch 40",0],[0,"2 x 1-1/2","Reducer bushing, spigot x hub","Verify branch configuration","PVC","Sch 40",0],[0,"2 x 1-1/2","Reducing coupling","Verify branch configuration","PVC","Sch 40",0],[0,"2 x 1-1/2","Double reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 1-1/2","Reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 1-1/2","Reducing sanitary tee","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 1-1/2","Reducing combination wye","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 1-1/2","Reducer bushing, spigot x hub","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 1-1/2","Reducing coupling","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 1-1/2","Double reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 2","Reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 2","Reducing sanitary tee","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 2","Reducing combination wye","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 2","Reducer bushing, spigot x hub","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 2","Reducing coupling","Verify branch configuration","PVC","Sch 40",0],[0,"3 x 2","Double reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 1-1/2","Reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 1-1/2","Reducing sanitary tee","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 1-1/2","Reducing combination wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 1-1/2","Reducer bushing, spigot x hub","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 1-1/2","Reducing coupling","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 1-1/2","Double reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 2","Reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 2","Reducing sanitary tee","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 2","Reducing combination wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 2","Reducer bushing, spigot x hub","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 2","Reducing coupling","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 2","Double reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 3","Reducing wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 3","Reducing sanitary tee","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 3","Reducing combination wye","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 3","Reducer bushing, spigot x hub","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 3","Reducing coupling","Verify branch configuration","PVC","Sch 40",0],[0,"4 x 3","Double reducing wye","Verify branch configuration","PVC","Sch 40",0],[1,"3","Pipe, 10 ft","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","90 elbow","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","90 street elbow","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","45 elbow","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","45 street elbow","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","22-1/2 elbow","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Coupling","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Repair coupling","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Sanitary tee","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Wye","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Double wye","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Cleanout tee with plug","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Cap","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3","Hub adapter to Sch 40","Thin-wall; verify fit and marked standard","PVC","Sch 30",0],[1,"3 x 1-1/2","Reducing wye","Verify compatibility","PVC","Sch 30",0],[1,"3 x 1-1/2","Reducing sanitary tee","Verify compatibility","PVC","Sch 30",0],[1,"3 x 1-1/2","Reducer bushing","Verify compatibility","PVC","Sch 30",0],[1,"3 x 2","Reducing wye","Verify compatibility","PVC","Sch 30",0],[1,"3 x 2","Reducing sanitary tee","Verify compatibility","PVC","Sch 30",0],[1,"3 x 2","Reducer bushing","Verify compatibility","PVC","Sch 30",0],[2,"1/2","Pipe type M, 10 ft","Verify fitting system and listing","Copper","Type M",0],[2,"1/2","Pipe type L, 10 ft","Verify fitting system and listing","Copper","Type L",0],[2,"1/2","90 elbow","Verify fitting system and listing","Copper","",0],[2,"1/2","90 street elbow","Verify fitting system and listing","Copper","",0],[2,"1/2","45 elbow","Verify fitting system and listing","Copper","",0],[2,"1/2","45 street elbow","Verify fitting system and listing","Copper","",0],[2,"1/2","Coupling with stop","Verify fitting system and listing","Copper","",0],[2,"1/2","Repair coupling no stop","Verify fitting system and listing","Copper","",0],[2,"1/2","Tee","Verify fitting system and listing","Copper","",0],[2,"1/2","Male adapter, press x MIP","Verify fitting system and listing","Copper","",0],[2,"1/2","Female adapter, press x FIP","Verify fitting system and listing","Copper","",0],[2,"1/2","Union","Verify fitting system and listing","Copper","",0],[2,"1/2","Cap","Verify fitting system and listing","Copper","",0],[2,"1/2","Ball valve, press","Verify fitting system and listing","Copper","",0],[2,"1/2","Drop-ear elbow, press x FIP","Verify fitting system and listing","Copper","",0],[2,"3/4","Pipe type M, 10 ft","Verify fitting system and listing","Copper","Type M",0],[2,"3/4","Pipe type L, 10 ft","Verify fitting system and listing","Copper","Type L",0],[2,"3/4","90 elbow","Verify fitting system and listing","Copper","",0],[2,"3/4","90 street elbow","Verify fitting system and listing","Copper","",0],[2,"3/4","45 elbow","Verify fitting system and listing","Copper","",0],[2,"3/4","45 street elbow","Verify fitting system and listing","Copper","",0],[2,"3/4","Coupling with stop","Verify fitting system and listing","Copper","",0],[2,"3/4","Repair coupling no stop","Verify fitting system and listing","Copper","",0],[2,"3/4","Tee","Verify fitting system and listing","Copper","",0],[2,"3/4","Male adapter, press x MIP","Verify fitting system and listing","Copper","",0],[2,"3/4","Female adapter, press x FIP","Verify fitting system and listing","Copper","",0],[2,"3/4","Union","Verify fitting system and listing","Copper","",0],[2,"3/4","Cap","Verify fitting system and listing","Copper","",0],[2,"3/4","Ball valve, press","Verify fitting system and listing","Copper","",0],[2,"3/4","Drop-ear elbow, press x FIP","Verify fitting system and listing","Copper","",0],[2,"1","Pipe type M, 10 ft","Verify fitting system and listing","Copper","Type M",0],[2,"1","Pipe type L, 10 ft","Verify fitting system and listing","Copper","Type L",0],[2,"1","90 elbow","Verify fitting system and listing","Copper","",0],[2,"1","90 street elbow","Verify fitting system and listing","Copper","",0],[2,"1","45 elbow","Verify fitting system and listing","Copper","",0],[2,"1","45 street elbow","Verify fitting system and listing","Copper","",0],[2,"1","Coupling with stop","Verify fitting system and listing","Copper","",0],[2,"1","Repair coupling no stop","Verify fitting system and listing","Copper","",0],[2,"1","Tee","Verify fitting system and listing","Copper","",0],[2,"1","Male adapter, press x MIP","Verify fitting system and listing","Copper","",0],[2,"1","Female adapter, press x FIP","Verify fitting system and listing","Copper","",0],[2,"1","Union","Verify fitting system and listing","Copper","",0],[2,"1","Cap","Verify fitting system and listing","Copper","",0],[2,"1","Ball valve, press","Verify fitting system and listing","Copper","",0],[2,"1","Drop-ear elbow, press x FIP","Verify fitting system and listing","Copper","",0],[2,"3/4 x 1/2","Reducing coupling","Verify end configuration and availability","Copper","",0],[2,"3/4 x 1/2","Reducing tee, reduced branch","Verify end configuration and availability","Copper","",0],[2,"3/4 x 1/2","Reducing 90 elbow","Verify end configuration and availability","Copper","",0],[2,"3/4 x 1/2","Male threaded reducing adapter","Verify end configuration and availability","Copper","",0],[2,"3/4 x 1/2","Female threaded reducing adapter","Verify end configuration and availability","Copper","",0],[2,"1 x 1/2","Reducing coupling","Verify end configuration and availability","Copper","",0],[2,"1 x 1/2","Reducing tee, reduced branch","Verify end configuration and availability","Copper","",0],[2,"1 x 1/2","Reducing 90 elbow","Verify end configuration and availability","Copper","",0],[2,"1 x 1/2","Male threaded reducing adapter","Verify end configuration and availability","Copper","",0],[2,"1 x 1/2","Female threaded reducing adapter","Verify end configuration and availability","Copper","",0],[2,"1 x 3/4","Reducing coupling","Verify end configuration and availability","Copper","",0],[2,"1 x 3/4","Reducing tee, reduced branch","Verify end configuration and availability","Copper","",0],[2,"1 x 3/4","Reducing 90 elbow","Verify end configuration and availability","Copper","",0],[2,"1 x 3/4","Male threaded reducing adapter","Verify end configuration and availability","Copper","",0],[2,"1 x 3/4","Female threaded reducing adapter","Verify end configuration and availability","Copper","",0],[3,"1/2","Uponor AquaPEX pipe, white","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Uponor AquaPEX pipe, red","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Uponor AquaPEX pipe, blue","Expansion connection; verify listed product","PEX","",0],[3,"1/2","ProPEX expansion ring","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Coupling, EP","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Coupling, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"1/2","90 elbow, EP","Expansion connection; verify listed product","PEX","",0],[3,"1/2","90 elbow, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Tee, EP","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Tee, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Male adapter, PEX x MIP","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Female adapter, PEX x FIP","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Copper sweat adapter","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Drop-ear elbow","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Ball valve, expansion","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Plug","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Bend support","Expansion connection; verify listed product","PEX","",0],[3,"1/2","Pipe support clamp","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Uponor AquaPEX pipe, white","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Uponor AquaPEX pipe, red","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Uponor AquaPEX pipe, blue","Expansion connection; verify listed product","PEX","",0],[3,"3/4","ProPEX expansion ring","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Coupling, EP","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Coupling, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"3/4","90 elbow, EP","Expansion connection; verify listed product","PEX","",0],[3,"3/4","90 elbow, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Tee, EP","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Tee, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Male adapter, PEX x MIP","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Female adapter, PEX x FIP","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Copper sweat adapter","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Drop-ear elbow","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Ball valve, expansion","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Plug","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Bend support","Expansion connection; verify listed product","PEX","",0],[3,"3/4","Pipe support clamp","Expansion connection; verify listed product","PEX","",0],[3,"1","Uponor AquaPEX pipe, white","Expansion connection; verify listed product","PEX","",0],[3,"1","Uponor AquaPEX pipe, red","Expansion connection; verify listed product","PEX","",0],[3,"1","Uponor AquaPEX pipe, blue","Expansion connection; verify listed product","PEX","",0],[3,"1","ProPEX expansion ring","Expansion connection; verify listed product","PEX","",0],[3,"1","Coupling, EP","Expansion connection; verify listed product","PEX","",0],[3,"1","Coupling, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"1","90 elbow, EP","Expansion connection; verify listed product","PEX","",0],[3,"1","90 elbow, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"1","Tee, EP","Expansion connection; verify listed product","PEX","",0],[3,"1","Tee, lead-free brass","Expansion connection; verify listed product","PEX","",0],[3,"1","Male adapter, PEX x MIP","Expansion connection; verify listed product","PEX","",0],[3,"1","Female adapter, PEX x FIP","Expansion connection; verify listed product","PEX","",0],[3,"1","Copper sweat adapter","Expansion connection; verify listed product","PEX","",0],[3,"1","Drop-ear elbow","Expansion connection; verify listed product","PEX","",0],[3,"1","Ball valve, expansion","Expansion connection; verify listed product","PEX","",0],[3,"1","Plug","Expansion connection; verify listed product","PEX","",0],[3,"1","Bend support","Expansion connection; verify listed product","PEX","",0],[3,"1","Pipe support clamp","Expansion connection; verify listed product","PEX","",0],[3,"3/4 x 1/2","Reducing coupling","Verify end arrangement and availability","PEX","",0],[3,"3/4 x 1/2","Reducing tee, reduced branch","Verify end arrangement and availability","PEX","",0],[3,"3/4 x 1/2","Reducing tee, reduced run","Verify end arrangement and availability","PEX","",0],[3,"3/4 x 1/2","Reducing elbow","Verify end arrangement and availability","PEX","",0],[3,"3/4 x 1/2","Reducing male adapter","Verify end arrangement and availability","PEX","",0],[3,"3/4 x 1/2","Reducing female adapter","Verify end arrangement and availability","PEX","",0],[3,"1 x 1/2","Reducing coupling","Verify end arrangement and availability","PEX","",0],[3,"1 x 1/2","Reducing tee, reduced branch","Verify end arrangement and availability","PEX","",0],[3,"1 x 1/2","Reducing tee, reduced run","Verify end arrangement and availability","PEX","",0],[3,"1 x 1/2","Reducing elbow","Verify end arrangement and availability","PEX","",0],[3,"1 x 1/2","Reducing male adapter","Verify end arrangement and availability","PEX","",0],[3,"1 x 1/2","Reducing female adapter","Verify end arrangement and availability","PEX","",0],[3,"1 x 3/4","Reducing coupling","Verify end arrangement and availability","PEX","",0],[3,"1 x 3/4","Reducing tee, reduced branch","Verify end arrangement and availability","PEX","",0],[3,"1 x 3/4","Reducing tee, reduced run","Verify end arrangement and availability","PEX","",0],[3,"1 x 3/4","Reducing elbow","Verify end arrangement and availability","PEX","",0],[3,"1 x 3/4","Reducing male adapter","Verify end arrangement and availability","PEX","",0],[3,"1 x 3/4","Reducing female adapter","Verify end arrangement and availability","PEX","",0],[4,"1/2","Black steel pipe, 10 ft","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","90 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","45 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Street 90 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Street 45 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Tee","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Coupling","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Union","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Cap","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Square-head plug","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Gas ball valve, threaded","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Ground-joint union","Verify gas listing and local requirements","Black steel","",0],[4,"1/2","Black nipple, Close","","Black steel","",0],[4,"1/2","Black nipple, 1-1/2 in","","Black steel","",0],[4,"1/2","Black nipple, 2 in","","Black steel","",0],[4,"1/2","Black nipple, 3 in","","Black steel","",0],[4,"1/2","Black nipple, 4 in","","Black steel","",0],[4,"1/2","Black nipple, 6 in","","Black steel","",0],[4,"1/2","Black nipple, 8 in","","Black steel","",0],[4,"1/2","Black nipple, 10 in","","Black steel","",0],[4,"1/2","Black nipple, 12 in","","Black steel","",0],[4,"3/4","Black steel pipe, 10 ft","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","90 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","45 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Street 90 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Street 45 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Tee","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Coupling","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Union","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Cap","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Square-head plug","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Gas ball valve, threaded","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Ground-joint union","Verify gas listing and local requirements","Black steel","",0],[4,"3/4","Black nipple, Close","","Black steel","",0],[4,"3/4","Black nipple, 1-1/2 in","","Black steel","",0],[4,"3/4","Black nipple, 2 in","","Black steel","",0],[4,"3/4","Black nipple, 3 in","","Black steel","",0],[4,"3/4","Black nipple, 4 in","","Black steel","",0],[4,"3/4","Black nipple, 6 in","","Black steel","",0],[4,"3/4","Black nipple, 8 in","","Black steel","",0],[4,"3/4","Black nipple, 10 in","","Black steel","",0],[4,"3/4","Black nipple, 12 in","","Black steel","",0],[4,"1","Black steel pipe, 10 ft","Verify gas listing and local requirements","Black steel","",0],[4,"1","90 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1","45 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1","Street 90 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1","Street 45 elbow","Verify gas listing and local requirements","Black steel","",0],[4,"1","Tee","Verify gas listing and local requirements","Black steel","",0],[4,"1","Coupling","Verify gas listing and local requirements","Black steel","",0],[4,"1","Union","Verify gas listing and local requirements","Black steel","",0],[4,"1","Cap","Verify gas listing and local requirements","Black steel","",0],[4,"1","Square-head plug","Verify gas listing and local requirements","Black steel","",0],[4,"1","Gas ball valve, threaded","Verify gas listing and local requirements","Black steel","",0],[4,"1","Ground-joint union","Verify gas listing and local requirements","Black steel","",0],[4,"1","Black nipple, Close","","Black steel","",0],[4,"1","Black nipple, 1-1/2 in","","Black steel","",0],[4,"1","Black nipple, 2 in","","Black steel","",0],[4,"1","Black nipple, 3 in","","Black steel","",0],[4,"1","Black nipple, 4 in","","Black steel","",0],[4,"1","Black nipple, 6 in","","Black steel","",0],[4,"1","Black nipple, 8 in","","Black steel","",0],[4,"1","Black nipple, 10 in","","Black steel","",0],[4,"1","Black nipple, 12 in","","Black steel","",0],[4,"3/4 x 1/2","Reducing coupling","","Black steel","",0],[4,"3/4 x 1/2","Reducing tee","","Black steel","",0],[4,"3/4 x 1/2","Hex bushing","","Black steel","",0],[4,"1 x 1/2","Reducing coupling","","Black steel","",0],[4,"1 x 1/2","Reducing tee","","Black steel","",0],[4,"1 x 1/2","Hex bushing","","Black steel","",0],[4,"1 x 3/4","Reducing coupling","","Black steel","",0],[4,"1 x 3/4","Reducing tee","","Black steel","",0],[4,"1 x 3/4","Hex bushing","","Black steel","",0],[5,"1-1/4","1-1/4 tubular P-trap kit","","Plastic tubular","",1],[5,"1-1/2","1-1/2 tubular P-trap kit","","Plastic tubular","",1],[5,"1-1/4","1-1/4 metal P-trap kit","","Metal","",1],[5,"1-1/2","1-1/2 metal P-trap kit","","Metal","",1],[5,"1-1/4","1-1/4 tubular tailpiece","","Plastic tubular","",1],[5,"1-1/2","1-1/2 tubular tailpiece","","Plastic tubular","",1],[5,"1-1/2","1-1/2 flanged tailpiece","","","",1],[5,"1-1/2","1-1/2 dishwasher branch tailpiece","","","",1],[5,"1-1/2","1-1/2 continuous waste kit","","","",1],[5,"1-1/2","1-1/2 end outlet waste kit","","","",1],[5,"1-1/4","1-1/4 extension tube","","","",1],[5,"1-1/2","1-1/2 extension tube","","","",1],[5,"1-1/4","1-1/4 slip nuts and washers","","","",1],[5,"1-1/2","1-1/2 slip nuts and washers","","","",1],[5,"1-1/4 x 1-1/2","1-1/4 x 1-1/2 reducing washer","","","",1],[5,"1-1/2","1-1/2 trap adapter","","","",1],[5,"2 x 1-1/2","2 x 1-1/2 trap adapter","","","",1],[5,"2","2 PVC P-trap","","PVC","",1],[5,"3","3 PVC P-trap","","PVC","",1],[5,"","Sink basket strainer","","","",0],[5,"","Sink strainer gasket","","","",0],[5,"","Pop-up drain assembly","","","",0],[5,"","Tub waste and overflow kit","","","",0],[5,"","Tub shoe gasket","","","",0],[5,"","Tub drain stopper","","","",0],[5,"","Tubular wall escutcheon","","Plastic tubular","",0],[6,"","Wax ring","","","",0],[6,"","Wax ring with horn","","","",0],[6,"","Extra-thick wax ring","","","",0],[6,"","Wax-free toilet seal","","","",0],[6,"","Closet bolts and nuts","","","",0],[6,"","Closet bolt caps","","","",0],[6,"","Toilet flange 3 in","","","",0],[6,"","Toilet flange 4 x 3 in","","","",0],[6,"","Flange repair ring","","","",0],[6,"","Flange extender kit","","","",0],[6,"","Toilet shims","","","",0],[6,"","Toilet fill valve","","","",0],[6,"","Toilet flapper 2 in","","","",0],[6,"","Toilet flapper 3 in","","","",0],[6,"","Flush valve","","","",0],[6,"","Tank-to-bowl gasket","","","",0],[6,"","Tank bolts and washers","","","",0],[6,"","Toilet handle","","","",0],[6,"","Toilet seat","","","",0],[6,"","Toilet supply 3/8 compression x 7/8 ballcock 12 in","","","",0],[6,"","Toilet supply 3/8 compression x 7/8 ballcock 20 in","","","",0],[6,"","Closet flange test plug","","","",0],[7,"","Lav supply 3/8 compression x 1/2 FIP 12 in","","","",0],[7,"","Lav supply 3/8 compression x 1/2 FIP 20 in","","","",0],[7,"","Lav supply 3/8 compression x 1/2 FIP 30 in","","","",0],[7,"","Kitchen faucet supply extension 3/8 compression","","","",0],[7,"","Dishwasher supply 3/8 compression x 3/4 hose","","","",0],[7,"","Dishwasher elbow 3/8 compression x 3/4 hose","","","",0],[7,"","Ice maker supply line","","","",0],[7,"","Washing machine hoses pair","","","",0],[7,"","Angle stop 1/2 compression x 3/8 compression","","","",0],[7,"","Straight stop 1/2 compression x 3/8 compression","","","",0],[7,"","Angle stop 1/2 FIP x 3/8 compression","","","",0],[7,"","Angle stop 1/2 sweat x 3/8 compression","","","",0],[7,"","Dual outlet stop","","","",0],[7,"1/2","Compression ferrules 1/2","","","",1],[7,"3/8","Compression ferrules 3/8","","","",1],[7,"1/2","Supply escutcheons 1/2","","","",1],[8,"1/2","1/2 brass ball valve FIP","","Brass","",1],[8,"3/4","3/4 brass ball valve FIP","","Brass","",1],[8,"1","1 brass ball valve FIP","","Brass","",1],[8,"1/2","1/2 boiler drain","","","",1],[8,"3/4","3/4 boiler drain","","","",1],[8,"1/2","1/2 hose bibb","","","",1],[8,"3/4","3/4 hose bibb","","","",1],[8,"","Frost-free sillcock","","","",0],[8,"","Vacuum breaker","","","",0],[8,"","Pressure reducing valve","","","",0],[8,"","Thermal expansion tank","","","",0],[8,"","Water hammer arrestor","","","",0],[8,"1/2","1/2 check valve","","","",1],[8,"3/4","3/4 check valve","","","",1],[8,"1","1 check valve","","","",1],[8,"1/2","1/2 SharkBite coupling","","Push-to-connect","",1],[8,"3/4","3/4 SharkBite coupling","","Push-to-connect","",1],[8,"1","1 SharkBite coupling","","Push-to-connect","",1],[8,"1/2","1/2 SharkBite cap","","Push-to-connect","",1],[8,"3/4","3/4 SharkBite cap","","Push-to-connect","",1],[8,"","Water meter coupling","","","",0],[8,"","Washing machine outlet box","","","",0],[8,"","Ice maker outlet box","","","",0],[8,"","Hose washers","","","",0],[8,"1/2","1/2 copper drop ear","","Copper","",1],[8,"3/4","3/4 copper drop ear","","Copper","",1],[9,"1-1/2","1-1/2 air admittance valve","","","",1],[9,"2","2 air admittance valve","","","",1],[9,"3","3 cleanout plug","","","",1],[9,"4","4 cleanout plug","","","",1],[9,"1-1/2","1-1/2 mechanical test plug","","","",1],[9,"2","2 mechanical test plug","","","",1],[9,"3","3 mechanical test plug","","","",1],[9,"4","4 mechanical test plug","","","",1],[9,"2","2 shielded transition coupling","","","",1],[9,"3","3 shielded transition coupling","","","",1],[9,"4","4 shielded transition coupling","","","",1],[9,"3","3 cast iron to 3 PVC shielded coupling","","PVC","",1],[9,"4","4 cast iron to 4 PVC shielded coupling","","PVC","",1],[9,"3 x 2","3 x 2 shielded reducing coupling","","","",1],[9,"","Floor drain","","","",0],[9,"","Floor drain strainer","","","",0],[9,"","Backwater valve","","","",0],[9,"2","2 standpipe trap","","","",1],[9,"","PVC primer","","PVC","",0],[9,"","PVC DWV cement","","PVC","",0],[9,"","Cleanout cover plate","","","",0],[9,"","Drain cable grease","","","",0],[10,"3/4","3/4 water heater flex connector","","","",1],[10,"3/4","3/4 dielectric union","","","",1],[10,"3/4","3/4 FIP x 3/4 MIP dielectric nipple","","","",1],[10,"3/4","3/4 temperature and pressure relief valve","","","",1],[10,"","Water heater drain pan","","","",0],[10,"","Water heater pan drain fitting","","","",0],[10,"","Water heater expansion tank","","","",0],[10,"","Water heater earthquake strap","","","",0],[10,"1/2","Gas appliance connector 1/2","","","",1],[10,"3/4","Gas appliance connector 3/4","","","",1],[10,"","Gas sediment trap fittings","","","",0],[10,"","Water heater gas control thermocouple","","","",0],[10,"","Condensate tubing","","","",0],[10,"","Condensate pump","","","",0],[10,"3/4","3/4 condensate PVC pipe","","PVC","",1],[10,"3/4","3/4 condensate PVC elbow","","PVC","",1],[10,"3/4","3/4 condensate PVC coupling","","PVC","",1],[11,"","PTFE tape","","","",0],[11,"","Gas-rated thread seal tape","","","",0],[11,"","Pipe thread sealant, potable-water rated","","","",0],[11,"","Pipe thread sealant, gas rated","","","",0],[11,"","Silicone sealant","","","",0],[11,"","Paintable caulk","","","",0],[11,"","Plumbers putty","","","",0],[11,"","Plumber abrasive cloth","","","",0],[11,"","Copper flux","","Copper","",0],[11,"","Lead-free solder","","","",0],[11,"","Cleaning rags","","","",0],[11,"","Nitrile gloves","","","",0],[11,"","Safety glasses","","","",0],[11,"1/2","Pipe insulation 1/2","","","",1],[11,"3/4","Pipe insulation 3/4","","","",1],[11,"1","Pipe insulation 1","","","",1],[11,"","Duct tape","","","",0],[11,"","Electrical tape","","","",0],[11,"","Pipe strapping","","","",0],[11,"1/2","1/2 copper pipe straps","","Copper","",1],[11,"3/4","3/4 copper pipe straps","","Copper","",1],[11,"1","1 copper pipe straps","","Copper","",1],[11,"2","2 pipe hangers","","","",1],[11,"3","3 pipe hangers","","","",1],[11,"4","4 pipe hangers","","","",1],[11,"","Concrete screws","","","",0],[11,"","Wood screws","","","",0],[11,"","Wall anchors","","","",0],[11,"","Plastic shims","","","",0],[11,"","Black poly roll","","","",0],[11,"","Firestop sealant","","","",0],[12,"","Copper press tool","","Copper","",0],[12,"1/2","Press jaws 1/2","","","",1],[12,"3/4","Press jaws 3/4","","","",1],[12,"1","Press jaws 1","","","",1],[12,"","PEX expansion tool","","PEX","",0],[12,"1/2","Expansion head 1/2","","","",1],[12,"3/4","Expansion head 3/4","","","",1],[12,"1","Expansion head 1","","","",1],[12,"","PEX cutter","","PEX","",0],[12,"","Copper tubing cutter","","Copper","",0],[12,"","PVC pipe cutter","","PVC","",0],[12,"","Reciprocating saw","","","",0],[12,"","Reciprocating saw blades","","","",0],[12,"","Drill driver","","","",0],[12,"","Impact driver","","","",0],[12,"","Drill bits","","","",0],[12,"","Hole saw kit","","","",0],[12,"","Oscillating tool","","","",0],[12,"","Pipe wrench 10 in","","","",0],[12,"","Pipe wrench 14 in","","","",0],[12,"","Adjustable wrench","","","",0],[12,"","Basin wrench","","","",0],[12,"","Channel-lock pliers","","","",0],[12,"","Tongue and groove pliers","","","",0],[12,"","Tub drain wrench","","","",0],[12,"","Toilet auger","","","",0],[12,"","Hand drain snake","","","",0],[12,"","Drain cleaning machine","","","",0],[12,"","Drain cleaning cable","","","",0],[12,"","Plunger","","","",0],[12,"","Tape measure","","","",0],[12,"","Level","","","",0],[12,"","Flashlight","","","",0],[12,"","Inspection camera","","","",0],[12,"","Water pressure gauge","","","",0],[12,"","Gas leak detector","","","",0],[12,"","Manometer","","","",0],[12,"","Multimeter","","","",0],[12,"","Bucket","","","",0],[12,"","Wet dry vacuum","","","",0],[12,"","Extension cords","","","",0],[12,"","Tool batteries","","","",0],[12,"","Battery charger","","","",0]]}</script>
+<script>
+"use strict";
+/* ================= constants & helpers ================= */
+const LEVELS=["Extra","Stocked","Half","Low","Out"];
+const NEED=new Set(["Low","Out"]);
+const LOCS=["van","shop"],LOCNAME={van:"Van",shop:"Shop"};
+const STOCK_F=["lvl","flag"],DETAIL_F=["name","size","mat","sch","nick","hidden","gone","ord","cnote"];
+const CAT=JSON.parse(document.getElementById("catalog").textContent);
+const GROUPS=[["PVC",["PVC DWV Sch 40","PVC Sch 30 thin-wall"]],["PEX",["Uponor PEX / ProPEX"]],["Copper",["Copper press"]],["Gas / black",["Black gas fittings"]],
+  ["Drain & traps",["Drain and vent accessories","Tubular and traps"]],["Toilet",["Toilet parts"]],["Supply & valves",["Supply lines and stops","Valves and water supplies"]],
+  ["Water heater",["Water heater and appliances"]],["Supplies",["Consumables and fasteners"]],["Tools",["Tools and equipment"]]];
+const CATWORDS={pvc:"PVC DWV Sch 40",pex:"Uponor PEX / ProPEX",propex:"Uponor PEX / ProPEX",uponor:"Uponor PEX / ProPEX",copper:"Copper press",press:"Copper press",gas:"Black gas fittings",black:"Black gas fittings"};
+const SIZECHIPS=["3/8","1/2","3/4","1","1-1/4","1-1/2","2","3","4"];
+const K="pi2.";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(K+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(K+k,JSON.stringify(v));return true}catch(e){return false}},del(k){try{localStorage.removeItem(K+k)}catch(e){}}};
+const DEV=store.get("dev",null)||(()=>{const d="d"+Math.random().toString(36).slice(2,10);store.set("dev",d);return d})();
+const norm=s=>String(s??"").toLowerCase().replace(/[\s,]+/g," ").trim();
+const isObj=v=>v&&typeof v==="object"&&!Array.isArray(v);
+function deepMerge(a,b){const o=isObj(a)?{...a}:{};for(const k in b){o[k]=isObj(b[k])?deepMerge(isObj(o[k])?o[k]:{},b[k]):b[k]}return o}
+function frac(s){s=String(s).trim();let m;if(m=s.match(/^(\d+)-(\d+)\/(\d+)$/))return +m[1]+m[2]/m[3];if(m=s.match(/^(\d+)\/(\d+)$/))return m[1]/m[2];if(/^\d+(\.\d+)?$/.test(s))return +s;return NaN}
+const sizeParts=sz=>sz?String(sz).split(/\s*x\s*/i).map(p=>p.trim()).filter(Boolean):[];
+function cmpSize(a,b){const A=sizeParts(a).map(frac),B=sizeParts(b).map(frac);if(!A.length&&!B.length)return 0;if(!A.length)return 1;if(!B.length)return-1;
+  for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]??-1,y=B[i]??-1;if(isNaN(x)||isNaN(y)){if(isNaN(x)&&isNaN(y))continue;return isNaN(x)?1:-1}if(x!==y)return x-y}return 0}
+function ago(t){if(!t)return"";const s=(Date.now()-t)/1000;if(s<45)return"just now";if(s<3600)return Math.round(s/60)+" min ago";if(s<86400)return Math.round(s/3600)+" h ago";const d=Math.round(s/86400);return d<30?d+" d ago":new Date(t).toLocaleDateString()}
+const clock=t=>new Date(t).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
+
+/* ================= size-aware search ================= */
+const UFR={"½":"1/2","¼":"1/4","¾":"3/4","⅛":"1/8","⅜":"3/8","⅝":"5/8","⅞":"7/8"};
+const DEC={"5":"1/2","25":"1/4","75":"3/4","125":"1/8","375":"3/8"};
+const NUMW={one:"1",two:"2",three:"3",four:"4",six:"6"};
+function normQuery(q){
+  let s=" "+String(q||"").toLowerCase().replace(/[’”″"]/g,'"')+" ";
+  s=s.replace(/(\d)\s*([½¼¾⅛⅜⅝⅞])/g,(m,d,f)=>d+"-"+UFR[f]).replace(/[½¼¾⅛⅜⅝⅞]/g,f=>" "+UFR[f]+" ");
+  s=s.replace(/(\d*)\.(5|25|75|125|375)\b/g,(m,w,d)=>(w&&w!=="0"?w+"-":"")+DEC[d]);
+  s=s.replace(/\b(?:an? )?inch and a half\b|\b(?:one|1) and a half\b/g," 1-1/2 ").replace(/\b(?:an? )?inch and a quarter\b|\b(?:one|1) and a quarter\b/g," 1-1/4 ")
+     .replace(/\bthree[- ]?quarters?\b|\b3 quarters?\b/g," 3/4 ").replace(/\bthree[- ]?eighths?\b/g," 3/8 ").replace(/\bquarter[- ]?inch\b/g," 1/4 ").replace(/\bhalf[- ]?inch\b|\bhalf\b/g," 1/2 ")
+     .replace(/\b(one|two|three|four|six)[- ]?inch(es)?\b/g,(m,w)=>" "+NUMW[w]+" ");
+  s=s.replace(/(^|\s)(\d+)\s+(\d+\/\d+)/g,"$1$2-$3");
+  s=s.replace(/(\d)\s*(?:-?\s*inch(?:es)?\b|-?in\b\.?|"|'')/g,"$1 ");
+  s=s.replace(/(\d)\s*[x×*]\s*(\d)/g,"$1 x $2");
+  return s.replace(/\s+/g," ").trim();
+}
+const STOP=new Set(["x","in","inch","inches","the","a","an","of","for","and","to"]);
+const SZTOK=/^(\d+-\d+\/\d+|\d+\/\d+|\d+)$/;
+function tokenize(q){return normQuery(q).replace(/,/g," ").split(" ").filter(t=>t&&!STOP.has(t))}
+const ALIAS={san:["sanitary"],santee:["sanitary tee"],ell:["elbow"],el:["elbow"],ells:["elbow"],combo:["combination"],st:["street"],ls:["long sweep"],
+  aav:["air admittance"],co:["cleanout"],tp:["temperature and pressure"],"t&p":["temperature and pressure"],sb:["sharkbite"],nip:["nipple"],fip:["fip","female"],mip:["mip","male"],
+  reducer:["reducing","reducer"],reducing:["reducing","reducer"],pex:["pex","uponor"],gas:["gas","black"],black:["black"],ball:["ball"],valve:["valve"]};
+function hayOf(it){const h=" "+norm([it.name,it.nick,it.cat,it.mat,it.sch].join(" "))+" ";return{h,h2:h.replace(/[-/()]/g," "),words:new Set(h.split(/[\s,()]+/))}}
+function tokMatch(it,H,t){
+  if(SZTOK.test(t))return sizeParts(it.size).includes(t)||H.words.has(t);
+  const alts=ALIAS[t]||[t];if(t.length>3&&t.endsWith("s"))alts.push(t.slice(0,-1));
+  return alts.some(a=>a.length<=2?H.h2.includes(" "+a+" "):(H.h.includes(" "+a)||H.h2.includes(" "+a)));
+}
+function score(it,toks){
+  const H=it._h||(it._h=hayOf(it));let sc=0;
+  for(const t of toks){if(!tokMatch(it,H,t))return -1}
+  const szt=toks.filter(t=>SZTOK.test(t)),parts=sizeParts(it.size);
+  if(szt.length){if(parts.length===1&&parts[0]===szt[0])sc+=4;else if(parts[0]===szt[0])sc+=2;if(szt[1]&&parts[1]===szt[1])sc+=2}
+  const nm=" "+norm(it.name);for(const t of toks)if(!SZTOK.test(t)&&nm.startsWith(" "+t))sc+=1;
+  return sc;
+}
+function parseAdd(q){
+  const toks=normQuery(q).replace(/,/g," ").split(" ").filter(Boolean);const sz=[],rest=[];let cat=null;
+  for(let i=0;i<toks.length;i++){const t=toks[i];
+    if(SZTOK.test(t)&&!rest.length&&(sz.length===0||(sz.length===1&&toks[i-1]==="x"))){sz.push(t);continue}
+    if(t==="x"&&sz.length===1&&SZTOK.test(toks[i+1]||""))continue;if(STOP.has(t)&&!rest.length)continue;
+    if(CATWORDS[t]&&!cat){cat=CATWORDS[t];if(t!=="press"&&t!=="black")continue}rest.push(t)}
+  return{size:sz.join(" x "),name:cap(rest.join(" ")),cat};
+}
+const normSize=s=>{const t=tokenize(s).filter(x=>SZTOK.test(x));return t.join(" x ")};
+
+/* ================= state ================= */
+const COLS=["van","shop","requests"];
+const S={mode:"loading",db:null,user:null,uid:null,role:store.get("role",null),
+  remote:{van:new Map(),shop:new Map(),requests:new Map()},docs:{van:new Map(),shop:new Map(),requests:new Map()},
+  loadedCols:new Set(),queue:store.get("queue",[]),flushing:false,online:false,lastSync:store.get("lastSync",0),
+  conflicts:store.get("conflicts",[]),loc:store.get("loc",null),tab:"stock",q:"",group:null,open:null,select:null,showHidden:false,hiddenView:false,
+  shown:80,rSticky:new Set(),itemsCache:{},myReqs:new Set(store.get("myReqs",[])),names:{},readOnly:false};
+const isOwner=()=>S.role==="owner";
+const curLoc=()=>isOwner()?(S.loc||"van"):"shop";
+
+/* ================= data: derive items ================= */
+function rebuild(){
+  if(S.mode!=="local"){
+    for(const c of COLS){
+      const m=new Map();for(const [id,d] of S.remote[c])m.set(id,d);
+      for(const q of S.queue){const [qc,qid]=q.path.split("/");if(qc!==c)continue;
+        if(q.op==="del")m.delete(qid);else if(q.op==="set")m.set(qid,deepMerge({},q.data));else m.set(qid,deepMerge(m.get(qid)||{},q.data))}
+      S.docs[c]=m;
+    }
+  }
+  S.itemsCache={};
+}
+function items(loc){
+  if(S.itemsCache[loc])return S.itemsCache[loc];
+  const out=new Map();
+  for(const [docId,d] of S.docs[loc]){if(docId==="meta"||!d||!d.items)continue;
+    for(const id in d.items){const it=d.items[id];if(!it)continue;
+      if(it.gone){continue}
+      out.set(id,{...it,id,doc:docId,cat:d.cat,cord:d.ord??99,loc});}}
+  return S.itemsCache[loc]=[...out.values()];
+}
+const meta=loc=>S.docs[loc].get("meta")||{};
+const visible=loc=>items(loc).filter(it=>!it.hidden);
+const needs=it=>!it.hidden&&(NEED.has(it.lvl)||!!it.flag);
+const groupOf=cat=>{for(const [g,cs] of GROUPS)if(cs.includes(cat))return g;return cat};
+const byOrder=(a,b)=>a.cord-b.cord||cmpSize(a.size,b.size)||(a.ord??0)-(b.ord??0)||a.name.localeCompare(b.name);
+const dispName=it=>{const n=it.name||"";return it.size&&n.startsWith(it.size+" ")?cap(n.slice(it.size.length+1)):n};
+const itemKey=it=>norm(it.cat)+"|"+normSize(it.size||"")+"|"+norm(it.name);
+
+/* ================= data: writes, queue, sync ================= */
+function persistLocal(){for(const c of COLS)store.set("local."+c,Object.fromEntries(S.docs[c]))}
+function queueWrite(path,data,op="update",base){
+  const [c,id]=path.split("/");
+  if(S.mode==="local"){
+    if(op==="del")S.docs[c].delete(id);else if(op==="set")S.docs[c].set(id,deepMerge({},data));else S.docs[c].set(id,deepMerge(S.docs[c].get(id)||{},data));
+    S.itemsCache={};persistLocal();return;
+  }
+  const last=S.queue[S.queue.length-1];
+  if(op==="update"&&last&&last.path===path&&last.op!=="del"&&!last.inflight){last.data=deepMerge(last.data,data);last.base=deepMerge(base||{},last.base||{})}
+  else S.queue.push({path,op,data,base:base||null,t:Date.now()});
+  store.set("queue",S.queue);rebuild();updateSync();flush();
+}
+function writeItem(it,patch){
+  if(!isOwner())return;
+  const now=Date.now(),p={...patch};const base={};
+  if(STOCK_F.some(f=>f in p)){p.sAt=now;p.sDev=DEV;base.s=it.sAt||0}
+  if(DETAIL_F.some(f=>f in p)){p.dAt=now;p.dDev=DEV;base.d=it.dAt||0}
+  queueWrite(`${it.loc}/${it.doc}`,{items:{[it.id]:p}},"update",{[it.id]:base});
+}
+function writeMany(loc,list,patchFn){ // list of items, grouped into one write per category doc
+  const now=Date.now(),by=new Map();
+  for(const it of list){const p=patchFn(it);if(!p)continue;const base={};
+    if(STOCK_F.some(f=>f in p)){p.sAt=now;p.sDev=DEV;base.s=it.sAt||0}if(DETAIL_F.some(f=>f in p)){p.dAt=now;p.dDev=DEV;base.d=it.dAt||0}
+    if(!by.has(it.doc))by.set(it.doc,{data:{items:{}},base:{}});const g=by.get(it.doc);g.data.items[it.id]=p;g.base[it.id]=base}
+  for(const [doc,g] of by)queueWrite(`${loc}/${doc}`,g.data,"update",g.base);
+}
+let wake=null;const sleep=ms=>new Promise(r=>{const t=setTimeout(r,ms);wake=()=>{clearTimeout(t);r()}});
+const pick=(o,fs)=>{const r={};for(const f of fs)if(o&&f in o)r[f]=o[f];return r};
+const same=(a,b,fs)=>fs.every(f=>(a[f]??null)===(b[f]??null));
+function checkConflicts(q,remote){
+  const [loc]=q.path.split("/");if(loc!=="van"&&loc!=="shop"||!q.data.items||!remote||!remote.items)return q.data;
+  const data=deepMerge({},q.data);
+  for(const id in data.items){const mine=data.items[id],r=remote.items[id];if(!r)continue;
+    for(const [g,fs,at,dv] of [["s",STOCK_F,"sAt","sDev"],["d",DETAIL_F,"dAt","dDev"]]){
+      const mf=fs.filter(f=>f in mine);if(!mf.length)continue;
+      const baseAt=q.base&&q.base[id]?q.base[id][g]:undefined;if(baseAt===undefined)continue;
+      if((r[at]||0)===(baseAt||0)||r[dv]===DEV)continue;        // nobody else changed it since this phone last saw it
+      if(same(mine,r,mf))continue;                               // both phones made the same change
+      const theirs=pick(r,mf),mineV=pick(mine,mf),nm=(r.size?r.size+" ":"")+(r.name||id),myAt=mine[at]||q.t;
+      if((r[at]||0)>myAt){for(const f of mf)delete mine[f];delete mine[at];delete mine[dv];
+        addConflict({loc,doc:q.path.split("/")[1],id,name:nm,kept:theirs,keptAt:r[at],keptBy:"other",alt:mineV,altAt:myAt});}
+      else addConflict({loc,doc:q.path.split("/")[1],id,name:nm,kept:mineV,keptAt:mine[at],keptBy:"this",alt:theirs,altAt:r[at]});
+    }
+    if(!Object.keys(mine).length)delete data.items[id];
+  }
+  return data;
+}
+function addConflict(c){c.cid=uid("c");c.t=Date.now();S.conflicts.unshift(c);S.conflicts=S.conflicts.slice(0,30);store.set("conflicts",S.conflicts);
+  toast(`Two phones changed ${c.name}. Kept the newer one; check More.`);renderTabs()}
+async function flush(){
+  if(S.flushing||!S.db||!S.queue.length)return;
+  S.flushing=true;
+  try{
+    while(S.queue.length&&S.db){
+      const q=S.queue[0];q.inflight=true;const [c,id]=q.path.split("/");const ref=S.db.doc(q.path);
+      try{
+        let remote=S.remote[c].get(id);
+        // read the server's current copy first, so a change made on another phone while this one was offline is never overwritten unnoticed
+        if(q.op==="update"&&(!remote||c==="van"||c==="shop")){const g=await ref.get();if(g.exists){remote=g.data();S.remote[c].set(id,remote)}else remote=undefined}
+        let data=q.op==="del"?null:(q.op==="update"?checkConflicts(q,remote):q.data);
+        if(q.op==="del")await ref.delete();
+        else if(q.op==="set"||!remote)await ref.set(q.op==="update"?deepMerge({},data):data);
+        else if(data.items&&!Object.keys(data.items).length&&Object.keys(data).length===1){/* nothing left after conflict resolution */}
+        else await ref.update(data);
+        S.queue.shift();S.online=true;
+        if(q.op==="del")S.remote[c].delete(id);else S.remote[c].set(id,q.op==="set"?deepMerge({},data):deepMerge(remote||{},data));
+      }catch(e){
+        q.inflight=false;const code=e&&e.code;
+        if(code==="invalid_argument"||code==="transform_error"){S.queue.shift();
+          if(c==="requests"){S.readOnly=true;toast("Your access is view-only, so the request couldn't be sent. Ask Jordan to give you Editor access.")}else toast("A change couldn't be saved: "+(e.message||code));continue}
+        if(code==="quota_exceeded"){S.queue.shift();toast("Storage is full. Clear old requests in More.");continue}
+        if(["revoked","not_granted","capability_disabled","capability_removed"].includes(code)){S.db=null;S.online=false;break}
+        S.online=false;updateSync();await sleep(code==="resource_exhausted"?3000:5000);
+      }finally{store.set("queue",S.queue)}
+    }
+  }finally{S.flushing=false;rebuild();updateSync();scheduleRender()}
+}
+setInterval(()=>{if(S.queue.length)flush()},12000);
+addEventListener("online",()=>{S.online=true;updateSync();if(wake){wake();wake=null}flush()});addEventListener("offline",()=>{S.online=false;updateSync()});
+let cacheT={};function cacheSoon(c){clearTimeout(cacheT[c]);cacheT[c]=setTimeout(()=>store.set("cache."+c,Object.fromEntries(S.remote[c])),1200)}
+
+/* ================= boot ================= */
+function seedLocal(){
+  for(const loc of LOCS){const m=new Map();
+    CAT.cats.forEach((cat,ci)=>m.set("c"+String(ci+1).padStart(2,"0"),{cat,ord:ci,items:{}}));
+    CAT.items.forEach((r,i)=>{const d=m.get("c"+String(r[0]+1).padStart(2,"0"));d.items["s"+String(i+1).padStart(3,"0")]={name:r[2],size:r[1],cnote:r[3],mat:r[4],sch:r[5],nick:"",ord:i,hidden:false,lvl:null,flag:false}});
+    m.set("meta",{setupDone:false});S.docs[loc]=m}
+}
+async function boot(){
+  // show the last copy right away (works with no signal)
+  if(store.get("wasShared",false)){S.mode="shared";for(const c of COLS){const ch=store.get("cache."+c,null);if(ch)S.remote[c]=new Map(Object.entries(ch))}rebuild()}
+  renderAll();
+  const c=window.claude;
+  const [db,user]=await Promise.all([c?c.use("db").catch(()=>null):null,c?c.use("user").catch(()=>null):null]);
+  S.user=user;
+  if(db&&user){
+    try{const o=await user.isOwner();S.role=o?"owner":"viewer";store.set("role",S.role)}catch(e){}
+    try{S.uid=await user.id()}catch(e){}
+    S.db=db;S.mode="shared";store.set("wasShared",true);
+    const cols=isOwner()?COLS:["shop","requests"];
+    for(const col of cols){
+      db.collection(col).limit(1000).onSnapshot(snap=>{
+        const m=new Map();for(const d of snap.docs)m.set(d.id,d.data());S.remote[col]=m;S.loadedCols.add(col);
+        if(!snap.metadata.fromCache){S.lastSync=Date.now();S.online=true;store.set("lastSync",S.lastSync);cacheSoon(col)}
+        rebuild();scheduleRender();flush();
+      },err=>{S.online=false;updateSync()});
+    }
+  }else if(S.mode!=="shared"){
+    S.mode="local";S.role="owner";
+    let any=false;for(const col of COLS){const v=store.get("local."+col,null);if(v){S.docs[col]=new Map(Object.entries(v));any=true}}
+    if(!any){seedLocal();persistLocal()}
+    for(const col of COLS)S.loadedCols.add(col);
+  }else{for(const col of COLS)if(S.remote[col].size)S.loadedCols.add(col)}
+  if(!S.role)S.role="viewer";
+  renderAll();
+}
+
+/* ================= rendering ================= */
+let rq=0;function scheduleRender(){if(rq)return;rq=setTimeout(()=>{rq=0;renderAll()},16)}
+function renderAll(){
+  const own=isOwner(),loc=curLoc();
+  $("#locSeg").hidden=!own;$("#viewerTitle").hidden=own;
+  $("#locVan").setAttribute("aria-pressed",loc==="van");$("#locShop").setAttribute("aria-pressed",loc==="shop");
+  if(!own&&!["stock","req"].includes(S.tab))S.tab="stock";
+  for(const [k,el] of [["stock","#vStock"],["refill","#vRefill"],["req","#vReq"],["more","#vMore"]])$(el).hidden=S.tab!==k;
+  $("#searchHead").hidden=S.tab!=="stock";
+  if(S.tab==="more"&&S.conflicts.some(c=>!c.seen)){S.conflicts.forEach(c=>c.seen=true);store.set("conflicts",S.conflicts)}
+  renderTabs();updateSync();
+  if(S.tab==="stock")renderStock();else if(S.tab==="refill")renderRefill();else if(S.tab==="req")renderReq();else renderMore();
+  renderStart();renderSelbar(false);
+}
+function renderTabs(){
+  const own=isOwner(),loc=curLoc();
+  const refillN=own?visible(loc).filter(needs).length:0;
+  const openReq=[...S.docs.requests.values()].filter(r=>r&&r.status==="open").length;
+  const tabs=own?[["stock","Stock"],["refill","Refill",refillN],["req","Requests",openReq],["more","More",S.conflicts.filter(c=>!c.seen).length]]:[["stock","Shop"],["req","Request"]];
+  $("#tabs").innerHTML=tabs.map(([k,l,n])=>`<button type="button" data-tab="${k}" ${S.tab===k?'aria-current="page"':""}><span class="lb">${l}${n?`<span class="badge">${n}</span>`:""}</span></button>`).join("");
+}
+function updateSync(){
+  const d=$("#syncDot"),t=$("#syncTxt");let cls="",txt="";
+  if(S.mode==="local")txt="This phone";
+  else if(S.mode==="loading")txt="…";
+  else if(S.queue.length){cls=S.db&&S.online?"wait":"off";txt=S.db&&S.online?"Saving":"Offline · "+S.queue.length}
+  else if(S.db&&S.online&&navigator.onLine){cls="ok";txt="Synced"}
+  else{cls="off";txt="Offline"}
+  d.className="dot "+cls;t.textContent=txt;
+}
+function pillHTML(it){
+  if(it.hidden)return`<span class="pill Hidden">Hidden</span>`;
+  return`<span class="pill ${it.lvl||"None"}">${it.lvl||"Not set"}</span>`;
+}
+function rowHTML(it,opts={}){
+  const open=S.open===it.loc+":"+it.id&&!S.select;const own=isOwner();
+  const sel=S.select?`<input type="checkbox" class="selbox" tabindex="-1" aria-hidden="true" ${S.select.has(it.id)?"checked":""}>`:"";
+  let acts="";
+  if(open){
+    if(it.hidden&&own)acts=`<div class="acts"><p class="upd" style="margin:0">Hidden from ${LOCNAME[it.loc]}. Restore it to track it again.</p><div class="minor"><button class="btn pri" type="button" data-act="unhide">Restore to ${LOCNAME[it.loc]}</button><button class="btn" type="button" data-act="edit">Edit</button></div></div>`;
+    else if(own)acts=`<div class="acts"><div class="lvls" role="group" aria-label="${LOCNAME[it.loc]} stock level">${LEVELS.map(l=>`<button class="lv" type="button" data-lv="${l}" aria-pressed="${it.lvl===l}">${l}</button>`).join("")}</div>
+      <div class="minor"><button class="btn sm" type="button" data-act="flag" aria-pressed="${!!it.flag}">${it.flag?"⚑ Flagged":"⚑ Flag for refill"}</button><button class="btn sm" type="button" data-act="hide">Hide</button><button class="btn sm" type="button" data-act="edit">Edit</button></div>
+      ${it.sAt&&S.mode!=="local"?`<span class="upd">Updated ${ago(it.sAt)}${it.sDev===DEV?" on this phone":""}</span>`:""}</div>`;
+    else acts=`<div class="acts"><div class="minor"><button class="btn sm" type="button" data-act="reqLow" ${S.readOnly?"disabled":""}>Report low</button><button class="btn sm" type="button" data-act="reqNeed" ${S.readOnly?"disabled":""}>Request this</button></div></div>`;
+  }
+  const showCat=opts.showCat;
+  return`<div class="row${open?" open":""}" data-loc="${it.loc}" data-id="${esc(it.id)}"><button class="rbtn" type="button" data-act="toggle" aria-expanded="${open}">${sel}${it.size?`<span class="size">${esc(it.size)}</span>`:""}
+    <span class="nm">${esc(dispName(it))}${showCat?`<span class="cat">${esc(it.cat)}</span>`:""}</span><span class="right">${it.flag&&!it.hidden?`<span class="flg" aria-label="flagged">⚑</span>`:""}${pillHTML(it)}</span></button>${acts}</div>`;
+}
+function renderRail(loc){
+  const base=S.hiddenView?items(loc).filter(i=>i.hidden):visible(loc);const cnt=new Map();
+  for(const it of base){const g=groupOf(it.cat);cnt.set(g,(cnt.get(g)||0)+1)}
+  const order=GROUPS.map(g=>g[0]).concat([...cnt.keys()].filter(g=>!GROUPS.some(x=>x[0]===g)).sort());
+  $("#rail").innerHTML=`<button class="chip" type="button" data-g="" aria-pressed="${!S.group}">All<span class="c">${base.length}</span></button>`+
+    order.filter(g=>cnt.has(g)).map(g=>`<button class="chip" type="button" data-g="${esc(g)}" aria-pressed="${S.group===g}">${esc(g)}<span class="c">${cnt.get(g)}</span></button>`).join("");
+}
+let io;
+function renderStock(){
+  const V=$("#vStock"),loc=curLoc(),own=isOwner();renderRail(loc);
+  if(!S.loadedCols.has(loc)&&!items(loc).length){V.innerHTML=`<div class="empty"><h3>Loading</h3><p>Getting the ${LOCNAME[loc].toLowerCase()} inventory…</p></div>`;return}
+  let html="";
+  const m=meta(loc),all=items(loc);
+  if(own&&!S.hiddenView&&all.length&&!m.setupDone){
+    const counted=all.filter(i=>!i.hidden&&i.lvl).length,blank=all.filter(i=>!i.hidden&&!i.lvl).length;
+    html+=`<div class="banner"><span><b>Setting up ${LOCNAME[loc]}:</b> ${counted} of ${counted+blank} set. When you finish, the ${blank} items still blank get hidden from ${LOCNAME[loc]} (not deleted).</span>
+      <div class="btnrow"><button class="btn sm pri" type="button" data-act="finishSetup">Finish setup</button><button class="btn sm" type="button" data-act="bulk">Select several</button></div></div>`;
+  }
+  if(S.hiddenView)html+=`<div class="banner"><span><b>Hidden from ${LOCNAME[loc]}.</b> These aren't tracked or shown in the normal list. Restore any you want back.</span><div class="btnrow"><button class="btn sm" type="button" data-act="bulk">Select several</button><button class="btn sm" type="button" data-act="exitHidden">Back to ${LOCNAME[loc]}</button></div></div>`;
+  if(!own&&S.mode==="shared"&&!all.length)html+=`<div class="empty"><h3>Nothing here yet</h3><p>The shop inventory hasn't been set up.</p></div>`;
+  const toks=tokenize(S.q);
+  const inGroup=it=>!S.group||groupOf(it.cat)===S.group;
+  const pool=S.hiddenView?all.filter(i=>i.hidden):all.filter(i=>!i.hidden);
+  let res=pool.filter(inGroup).map(it=>[it,toks.length?score(it,toks):0]).filter(x=>x[1]>=0);
+  if(toks.length)res.sort((a,b)=>b[1]-a[1]||byOrder(a[0],b[0]));else res.sort((a,b)=>byOrder(a[0],b[0]));
+  const arr=res.map(x=>x[0]);
+  const hidMatch=(own&&!S.hiddenView&&toks.length)?all.filter(i=>i.hidden&&inGroup(i)&&score(i,toks)>=0):[];
+  html+=`<div class="summary"><span>${toks.length?`${arr.length} match${arr.length===1?"":"es"}`:`${arr.length} item${arr.length===1?"":"s"}`}${S.group?" in "+esc(S.group):""} · ${LOCNAME[loc]}</span>
+    ${own&&arr.length?`<button class="btn sm ghost" type="button" data-act="bulk">${S.select?"Selecting…":"Select"}</button>`:""}</div>`;
+  if(arr.length){
+    const slice=arr.slice(0,S.shown);
+    if(toks.length||S.hiddenView){html+=`<div class="list">${slice.map(it=>rowHTML(it,{showCat:true})).join("")}</div>`}
+    else{let g=null;for(const it of slice){if(it.cat!==g){if(g!==null)html+=`</div>`;g=it.cat;html+=`<div class="ghead">${esc(g)}</div><div class="list">`}html+=rowHTML(it)}html+=`</div>`}
+    if(arr.length>S.shown)html+=`<div class="more" id="sentinel">Showing ${S.shown} of ${arr.length}…</div>`;
+  }else if(toks.length||S.group){html+=`<div class="empty"><p>No ${S.hiddenView?"hidden ":""}items match${S.q?` “${esc(S.q)}”`:""}${S.group?` in ${esc(S.group)}`:""}.</p></div>`}
+  if(hidMatch.length){
+    if(S.showHidden)html+=`<div class="ghead">Hidden from ${LOCNAME[loc]} (${hidMatch.length})</div><div class="list">${hidMatch.slice(0,40).map(it=>rowHTML(it,{showCat:true})).join("")}</div>`;
+    else html+=`<button class="hidmatch" type="button" data-act="showHidden">${hidMatch.length} hidden item${hidMatch.length===1?"":"s"} also match · Show</button>`;
+  }
+  if(!S.hiddenView){
+    const label=S.q.trim()?`Add “${esc(S.q.trim())}” to ${LOCNAME[loc]}`:`Add an item to ${LOCNAME[loc]}`;
+    if(own)html+=`<button class="addbig" type="button" data-act="add"><span class="plus" aria-hidden="true">+</span><span>${label}</span></button>`;
+    else html+=`<button class="addbig" type="button" data-act="reqFree" ${S.readOnly?"disabled":""}><span class="plus" aria-hidden="true">+</span><span>${S.q.trim()?`Request “${esc(S.q.trim())}”`:"Request something not listed"}</span></button>`;
+  }
+  V.innerHTML=html;
+  const sen=$("#sentinel");if(sen){io&&io.disconnect();io=new IntersectionObserver(e=>{if(e[0].isIntersecting){S.shown+=100;renderStock()}},{rootMargin:"700px"});io.observe(sen)}
+}
+function renderRefill(){
+  const V=$("#vRefill"),loc=curLoc();
+  const arr=visible(loc).filter(it=>needs(it)||S.rSticky&&S.rSticky.has(it.id)).sort(byOrder);
+  const n=arr.filter(needs).length;
+  let html=`<div class="summary"><span><b>${n}</b> to refill · ${LOCNAME[loc]}</span><span class="upd">Low, Out, or ⚑ flagged</span></div>`;
+  if(!arr.length)html+=`<div class="empty"><h3>Nothing to refill</h3><p>Items marked Low or Out in the ${LOCNAME[loc].toLowerCase()} show up here. Out means you track it and have none; hidden items never show up.</p></div>`;
+  let g=null;for(const it of arr){if(it.cat!==g){if(g!==null)html+=`</div>`;g=it.cat;html+=`<div class="ghead">${esc(g)}</div><div class="list">`}html+=rowHTML(it)}if(g!==null)html+="</div>";
+  V.innerHTML=html;
+}
+function reqCard(r,own){
+  const it=r.item&&items("shop").find(x=>x.id===r.item.id);
+  const kind={low:["low","Running low"],need:["need","Needs"],other:["other","Note"]}[r.kind]||["other","Request"];
+  const who=r.by?`<span data-by="${esc(r.by)}">${esc(r.from||"Someone")}</span>`:esc(r.from||"Someone");
+  return`<div class="req${r.status!=="open"?" closed":""}" data-rid="${esc(r._id)}"><div class="btnrow" style="justify-content:space-between;align-items:center"><span class="k ${kind[0]}">${kind[1]}</span><span class="stat ${r.status==="open"?"open":"done"}">${r.status==="open"?"Open":r.status==="done"?"Done":"Closed"}</span></div>
+    ${r.item?(it?`<div class="item list">${rowHTML(it,{showCat:true})}</div>`:`<div class="txt"><b>${esc((r.item.size?r.item.size+" ":"")+r.item.name)}</b></div>`):""}
+    ${r.text?`<div class="txt">${esc(r.text)}</div>`:""}
+    <span class="upd">From ${who} · ${ago(r.at)}${r.status!=="open"&&r.closedAt?` · closed ${ago(r.closedAt)}`:""}</span>
+    ${own&&r.status==="open"?`<div class="btnrow"><button class="btn sm go" type="button" data-act="reqDone">Done</button><button class="btn sm" type="button" data-act="reqDismiss">Dismiss</button></div>`:""}</div>`;
+}
+function reqList(){return[...S.docs.requests].map(([id,r])=>({...r,_id:id})).filter(r=>r&&r.at).sort((a,b)=>b.at-a.at)}
+function renderReq(){
+  const V=$("#vReq"),own=isOwner(),all=reqList();let html="";
+  if(own){
+    const open=all.filter(r=>r.status==="open"),closed=all.filter(r=>r.status!=="open");
+    html+=`<div class="summary"><span><b>${open.length}</b> open request${open.length===1?"":"s"} · Shop</span></div>`;
+    html+=open.length?`<div class="reqlist">${open.map(r=>reqCard(r,true)).join("")}</div>`:`<div class="empty"><h3>No requests</h3><p>When someone viewing the shop inventory reports something low or asks for an item, it lands here. Nothing changes the inventory until you do it.</p></div>`;
+    if(closed.length)html+=`<div class="ghead" style="display:flex;justify-content:space-between;align-items:center">Closed (${closed.length})<button class="btn sm ghost" type="button" data-act="reqClear">Clear</button></div><div class="reqlist">${closed.slice(0,20).map(r=>reqCard(r,true)).join("")}</div>`;
+  }else{
+    html+=`<div class="sec"><h2>Ask for something</h2><p>Tell Jordan what you need or what's running low in the shop. Requests don't change the inventory; he reviews them.</p>
+      <div class="btnrow"><button class="btn pri" type="button" data-act="reqFree" ${S.readOnly?"disabled":""}>New request</button></div>
+      ${S.readOnly?`<p class="err">Your access is view-only, so requests can't be sent. Ask Jordan to give you Editor access.</p>`:""}</div>`;
+    const mine=all.filter(r=>(S.uid&&r.by===S.uid)||S.myReqs.has(r._id));
+    html+=`<div class="ghead">Your requests</div>`+(mine.length?`<div class="reqlist">${mine.map(r=>reqCard(r,false)).join("")}</div>`:`<div class="empty"><p>You haven't sent any yet. Tip: search for an item on the Shop tab, tap it, then tap Report low.</p></div>`);
+  }
+  V.innerHTML=html;resolveNames(V);
+}
+function renderMore(){
+  const V=$("#vMore"),loc=curLoc(),shared=S.mode==="shared";
+  const hid=l=>items(l).filter(i=>i.hidden).length;
+  V.innerHTML=`
+  <div class="sec"><h2>Sync</h2>
+    <dl class="kv"><dt>Status</dt><dd>${S.mode==="local"?"Saved on this phone only":S.db&&S.online?"Online":"Offline"}</dd>
+    ${shared?`<dt>Waiting to sync</dt><dd>${S.queue.length} change${S.queue.length===1?"":"s"}</dd><dt>Last synced</dt><dd>${S.lastSync?ago(S.lastSync):"Not yet"}</dd>`:""}</dl>
+    <p>Search and stock changes work without signal. Changes are saved on this phone right away and sent when the connection comes back. Keep the page open, or open it once while you have signal, so the latest copy is on the phone.</p>
+    ${shared&&S.queue.length?`<button class="btn" type="button" data-act="flush">Try to sync now</button>`:""}
+  </div>
+  <div class="sec"><h2>Conflicts${S.conflicts.length?` (${S.conflicts.length})`:""}</h2>
+    ${S.conflicts.length?`<p>Two phones changed the same item before syncing. The newer change was kept. Nothing was thrown away: switch to the other value if it was right.</p>`+S.conflicts.map(c=>{
+      const v=o=>Object.entries(o).map(([k,x])=>k==="lvl"?(x||"Not set"):k==="flag"?(x?"flagged":"not flagged"):k==="hidden"?(x?"hidden":"shown"):`${k}: ${x}`).join(", ");
+      return`<div class="conf" data-cid="${c.cid}"><span><b>${LOCNAME[c.loc]} · ${esc(c.name)}</b></span><span>Kept: <b>${esc(v(c.kept))}</b> (${c.keptBy==="this"?"this phone":"other phone"}, ${clock(c.keptAt)})<br>Other: <b>${esc(v(c.alt))}</b> (${c.keptBy==="this"?"other phone":"this phone"}, ${clock(c.altAt)})</span>
+        <div class="btnrow"><button class="btn sm" type="button" data-act="useAlt">Use “${esc(v(c.alt))}”</button><button class="btn sm ghost" type="button" data-act="okConf">Keep</button></div></div>`}).join(""):`<p>None. If two phones change the same item while one is offline, it shows up here so neither change is silently lost.</p>`}
+  </div>
+  <div class="sec"><h2>Setup</h2>
+    ${LOCS.map(l=>{const m=meta(l);return`<dl class="kv"><dt>${LOCNAME[l]}</dt><dd>${m.setupDone?`Done · ${visible(l).length} tracked, ${hid(l)} hidden`:`In progress · ${items(l).filter(i=>!i.hidden&&i.lvl).length} set`}</dd></dl>`}).join("")}
+    <div class="btnrow"><button class="btn" type="button" data-act="openHidden">Hidden items in ${LOCNAME[loc]} (${hid(loc)})</button>${!meta(loc).setupDone?`<button class="btn pri" type="button" data-act="finishSetup">Finish ${LOCNAME[loc]} setup</button>`:""}</div>
+  </div>
+  <div class="sec"><h2>Who can see what</h2>
+    <p><b>Van:</b> only you. <b>Shop:</b> anyone you share this page with can search it and see levels, but only you can change it. They can send you requests from the Request tab.</p>
+    <ol><li>Open the Share menu on this page in Claude.</li><li>Add each person by email. To send requests, they need <b>Editor</b> (coworkers on the same Team plan can be <b>Contributor</b>). Viewer can look but not send requests.</li><li>Don't turn on a public link. While one is on, invited people outside your account can only view.</li></ol>
+    <p>Editor is a sharing level in Claude. The page's own rules still keep both inventories locked to you; Editors can only add requests.</p>
+  </div>
+  <div class="sec"><h2>Typing tips</h2><p>Sizes work as 1/2, ½, half inch, 1/2", .5 or 1 1/2. Add a word to narrow: “1/2 pex 90”, “3x2 san tee”, “3/4 ball valve”. To talk instead of type, tap the microphone on your phone's keyboard.</p></div>`;
+}
+function renderStart(){
+  const show=isOwner()&&!S.loc&&S.loadedCols.has("van");$("#startScreen").hidden=!show;
+  if(show)for(const l of LOCS){const v=visible(l);$("#st"+(l==="van"?"Van":"Shop")).textContent=meta(l).setupDone?`${v.filter(needs).length} to refill · ${v.length} tracked`:`Setup in progress · ${v.filter(i=>i.lvl).length} set`}
+}
+function renderSelbar(re=true){
+  const on=!!S.select;$("#selbar").hidden=!on;if(!on)return;
+  $("#selN").textContent=`${S.select.size} selected`;$("#selMain").textContent=S.hiddenView?"Restore":"Hide";$("#selLevel").hidden=S.hiddenView;
+}
+async function resolveNames(root){
+  if(!S.user)return;const els=[...root.querySelectorAll("[data-by]")];if(!els.length)return;
+  try{const ps=await S.user.profiles([...new Set(els.map(e=>e.dataset.by))]);for(const e of els){const p=ps[e.dataset.by];if(p&&p.name)e.textContent=p.isMe?"you":p.name}}catch(e){}
+}
+
+/* ================= modals ================= */
+function openModal(html,onMount){$("#modal").innerHTML=`<div class="scrim" id="scrim"><div class="sheet wrap" role="dialog" aria-modal="true">${html}</div></div>`;
+  const sc=$("#scrim");sc.addEventListener("click",e=>{if(e.target===sc)closeModal()});document.body.style.overflow="hidden";
+  const sh=$("#modal .sheet");sh.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeModal);onMount&&onMount(sh);const f=sh.querySelector("[autofocus]");f&&f.focus()}
+function closeModal(){$("#modal").innerHTML="";document.body.style.overflow=""}
+addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modal").innerHTML)closeModal()});
+function confirmSheet(title,body,okLabel,onOk,danger=false){
+  openModal(`<div class="hd"><h2>${esc(title)}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div><p style="margin:0">${body}</p>
+   <div class="btnrow"><button class="btn ${danger?"danger":"pri"}" type="button" id="cOk">${esc(okLabel)}</button><button class="btn" type="button" data-close>Cancel</button></div>`,
+   sh=>{sh.querySelector("#cOk").onclick=()=>{closeModal();onOk()}})
+}
+let toastT;function toast(msg,undo){const t=$("#toast");t.innerHTML=esc(msg)+(undo?` <button type="button" id="undoB">Undo</button>`:"");t.hidden=false;
+  if(undo)$("#undoB").onclick=()=>{undo();t.hidden=true};clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,undo?6000:3500)}
+
+function catOptions(loc,sel){const cats=[...S.docs[loc]].filter(([id,d])=>id!=="meta"&&d&&d.cat).sort((a,b)=>(a[1].ord??99)-(b[1].ord??99)).map(x=>x[1].cat);
+  const list=[...new Set(cats.concat(CAT.cats))];return list.map(c=>`<option ${c===sel?"selected":""}>${esc(c)}</option>`).join("")+`<option value="__new">New category…</option>`}
+function docForCat(loc,cat){for(const [id,d] of S.docs[loc])if(id!=="meta"&&d&&d.cat===cat)return id;return null}
+function addItems(loc,list){ // list of {name,size,cat,lvl}; returns {added,dups}
+  const have=new Map(items(loc).map(i=>[itemKey(i),i]));const added=[],dups=[];let ord=Math.max(0,...items(loc).map(i=>i.ord||0));
+  const byDoc=new Map(),newDocs=new Map();const now=Date.now();
+  for(const x of list){const k=itemKey(x);if(have.has(k)){dups.push(have.get(k));continue}have.set(k,x);
+    let doc=docForCat(loc,x.cat)||[...newDocs].find(([id,c])=>c===x.cat)?.[0];
+    if(!doc){doc="x"+Math.abs([...x.cat].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,7)).toString(36);newDocs.set(doc,x.cat)}
+    const id=uid("u");const it={name:x.name,size:x.size||"",nick:"",mat:"",sch:"",cnote:"",ord:++ord,hidden:false,lvl:x.lvl||null,flag:false,dAt:now,dDev:DEV,sAt:now,sDev:DEV,created:now};
+    if(!byDoc.has(doc))byDoc.set(doc,{});byDoc.get(doc)[id]=it;added.push({...it,id,doc,cat:x.cat,loc})}
+  for(const [doc,its] of byDoc){if(newDocs.has(doc)&&!S.docs[loc].has(doc))queueWrite(`${loc}/${doc}`,{cat:newDocs.get(doc),ord:50+S.docs[loc].size,items:its},"set");else queueWrite(`${loc}/${doc}`,{items:its},"update",{})}
+  return{added,dups};
+}
+function addSheet(prefill){
+  const loc=curLoc();const p=parseAdd(prefill||"");
+  const guessCat=p.cat||(S.group?(GROUPS.find(g=>g[0]===S.group)||[0,[S.group]])[1][0]:CAT.cats[0]);
+  let multi=false,lvl=null;
+  openModal(`<div class="hd"><h2>Add to ${LOCNAME[loc]}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>
+   <div id="oneMode" style="display:flex;flex-direction:column;gap:14px">
+    <div class="field"><label for="a_name">Item</label><input id="a_name" value="${esc(p.name)}" placeholder="e.g. 90 elbow" autofocus autocomplete="off"></div>
+    <div class="field"><label for="a_size">Size (in)</label><input id="a_size" value="${esc(p.size)}" placeholder="1/2, or 3 x 2 for reducing" autocomplete="off" inputmode="text">
+      <div class="chips" id="a_sizes">${SIZECHIPS.map(s=>`<button class="chip" type="button" data-sz="${s}" aria-pressed="${p.size===s}">${s}</button>`).join("")}</div></div>
+   </div>
+   <div id="multiMode" class="field" hidden><label for="a_lines">Items, one per line</label><textarea id="a_lines" rows="6" placeholder="1/2 90 elbow&#10;3/4 tee&#10;3 x 2 reducing wye"></textarea><span class="hint">Start each line with the size. They all go in the category below.</span></div>
+   <div class="field"><label for="a_cat">Category</label><select id="a_cat">${catOptions(loc,guessCat)}</select><input id="a_catnew" placeholder="New category name" hidden></div>
+   <div class="field"><span class="lab">Stock level (optional)</span><div class="lvls" id="a_lvls">${LEVELS.map(l=>`<button class="lv" type="button" data-lv="${l}" aria-pressed="false">${l}</button>`).join("")}</div></div>
+   <div class="err" id="a_err" hidden></div>
+   <button class="linkbtn" type="button" id="a_toggle">Add several at once</button>
+   <div class="btnrow stick"><button class="btn pri" type="button" id="a_save" style="flex:1">Add</button><button class="btn" type="button" id="a_next">Add &amp; next</button></div>`,sh=>{
+    const q=s=>sh.querySelector(s);
+    q("#a_sizes").onclick=e=>{const b=e.target.closest("[data-sz]");if(!b)return;q("#a_size").value=b.dataset.sz;sh.querySelectorAll("[data-sz]").forEach(x=>x.setAttribute("aria-pressed",x===b))};
+    q("#a_lvls").onclick=e=>{const b=e.target.closest("[data-lv]");if(!b)return;lvl=lvl===b.dataset.lv?null:b.dataset.lv;sh.querySelectorAll("#a_lvls [data-lv]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.lv===lvl))};
+    q("#a_cat").onchange=()=>{q("#a_catnew").hidden=q("#a_cat").value!=="__new";if(!q("#a_catnew").hidden)q("#a_catnew").focus()};
+    q("#a_toggle").onclick=()=>{multi=!multi;q("#oneMode").hidden=multi;q("#multiMode").hidden=!multi;q("#a_toggle").textContent=multi?"Add one item":"Add several at once";q("#a_next").hidden=multi;(multi?q("#a_lines"):q("#a_name")).focus()};
+    const save=next=>{
+      const err=q("#a_err");err.hidden=true;const cat=q("#a_cat").value==="__new"?q("#a_catnew").value.trim():q("#a_cat").value;
+      if(!cat){err.hidden=false;err.textContent="Pick or type a category.";return}
+      let list;
+      if(multi){list=q("#a_lines").value.split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{const x=parseAdd(l);return{name:x.name||l,size:x.size,cat,lvl}});if(!list.length){err.hidden=false;err.textContent="Type at least one item.";return}}
+      else{const name=q("#a_name").value.trim();if(!name){err.hidden=false;err.textContent="Type the item name.";q("#a_name").focus();return}list=[{name:cap(name),size:normSize(q("#a_size").value)||q("#a_size").value.trim(),cat,lvl}]}
+      const {added,dups}=addItems(loc,list);
+      if(!multi&&dups.length){const d=dups[0];err.hidden=false;err.innerHTML=`${esc((d.size?d.size+" ":"")+d.name)} is already in ${LOCNAME[loc]}${d.hidden?" (hidden)":""}. <button class="btn sm" type="button" id="a_dup">${d.hidden?"Restore it":"Show it"}</button>`;
+        q("#a_dup").onclick=()=>{if(d.hidden)writeItem(d,{hidden:false});closeModal();showItem(d)};return}
+      toast(`Added ${added.length} item${added.length===1?"":"s"} to ${LOCNAME[loc]}${dups.length?` · ${dups.length} already there`:""}`);
+      if(next){q("#a_name").value="";q("#a_name").focus();scheduleRender();return}
+      closeModal();if(added.length===1)showItem(added[0]);else scheduleRender();
+    };
+    q("#a_save").onclick=()=>save(false);q("#a_next").onclick=()=>save(true);
+    q("#a_name").addEventListener("keydown",e=>{if(e.key==="Enter")save(false)});
+  });
+}
+function showItem(it){S.q=dispName(it);$("#q").value=S.q;$("#qClr").hidden=false;S.group=null;S.tab="stock";S.hiddenView=false;S.open=it.loc+":"+it.id;S.shown=80;renderAll();scrollTo(0,0)}
+function editSheet(it){
+  openModal(`<div class="hd"><h2>Edit item</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>
+   <div class="field"><label for="e_name">Item</label><input id="e_name" value="${esc(it.name)}"></div>
+   <div class="two"><div class="field"><label for="e_size">Size (in)</label><input id="e_size" value="${esc(it.size)}"></div><div class="field"><label for="e_nick">Nickname</label><input id="e_nick" value="${esc(it.nick||"")}" placeholder="what you call it"></div></div>
+   <div class="field"><label for="e_cat">Category</label><select id="e_cat">${catOptions(it.loc,it.cat)}</select><input id="e_catnew" placeholder="New category name" hidden></div>
+   ${it.cnote?`<p class="hint" style="margin:0">Catalog note: ${esc(it.cnote)}</p>`:""}
+   <p class="hint" style="margin:0">Changes apply to ${LOCNAME[it.loc]} only.</p>
+   <div class="err" id="e_err" hidden></div>
+   <div class="btnrow stick"><button class="btn pri" type="button" id="e_save" style="flex:1">Save</button><button class="btn" type="button" id="e_hide">${it.hidden?"Restore":"Hide"}</button></div>`,sh=>{
+    const q=s=>sh.querySelector(s);
+    q("#e_cat").onchange=()=>{q("#e_catnew").hidden=q("#e_cat").value!=="__new"};
+    q("#e_hide").onclick=()=>{closeModal();hideItems([it],!it.hidden)};
+    q("#e_save").onclick=()=>{
+      const cat=q("#e_cat").value==="__new"?q("#e_catnew").value.trim():q("#e_cat").value;
+      const d={name:q("#e_name").value.trim(),size:normSize(q("#e_size").value)||q("#e_size").value.trim(),nick:q("#e_nick").value.trim()};
+      if(!d.name||!cat){q("#e_err").hidden=false;q("#e_err").textContent="Name and category are required.";return}
+      const dup=items(it.loc).find(x=>x.id!==it.id&&itemKey(x)===itemKey({...d,cat}));
+      if(dup){q("#e_err").hidden=false;q("#e_err").textContent=`That matches ${(dup.size?dup.size+" ":"")+dup.name}, already in ${LOCNAME[it.loc]}${dup.hidden?" (hidden)":""}.`;return}
+      if(cat!==it.cat){ // move to another category document
+        const {added}=addItems(it.loc,[{name:d.name,size:d.size,cat,lvl:it.lvl}]);
+        if(added[0]){const nw=added[0];writeItem({...nw,sAt:nw.sAt,dAt:nw.dAt},{nick:d.nick,flag:!!it.flag,hidden:!!it.hidden});writeItem(it,{gone:true})}
+      }else{const ch={};for(const k in d)if((it[k]||"")!==d[k])ch[k]=d[k];if(Object.keys(ch).length)writeItem(it,ch)}
+      closeModal();toast("Saved");scheduleRender();
+    };
+  });
+}
+function hideItems(list,hide){
+  const loc=curLoc();if(!list.length)return;
+  writeMany(loc,list,()=>({hidden:hide}));
+  S.select=null;S.open=null;scheduleRender();
+  toast(`${hide?"Hid":"Restored"} ${list.length} item${list.length===1?"":"s"} ${hide?"from":"to"} ${LOCNAME[loc]}`,()=>{writeMany(loc,list,()=>({hidden:!hide}));scheduleRender()});
+}
+function levelPicker(onPick){
+  openModal(`<div class="hd"><h2>Set level</h2><button class="x" type="button" data-close aria-label="Close">×</button></div><div class="lvls">${LEVELS.map(l=>`<button class="lv" type="button" data-lv="${l}">${l}</button>`).join("")}</div>`,
+    sh=>sh.querySelector(".lvls").onclick=e=>{const b=e.target.closest("[data-lv]");if(b){closeModal();onPick(b.dataset.lv)}});
+}
+function finishSetup(){
+  const loc=curLoc();const blank=items(loc).filter(i=>!i.hidden&&!i.lvl);
+  confirmSheet(`Finish ${LOCNAME[loc]} setup?`,`${blank.length} item${blank.length===1?" is":"s are"} still blank. They'll be hidden from the ${LOCNAME[loc].toLowerCase()} list, not deleted. Search still finds them, and you can restore them any time. Items marked Out stay visible.`,`Hide ${blank.length} & finish`,()=>{
+    writeMany(loc,blank,()=>({hidden:true}));
+    queueWrite(`${loc}/meta`,{setupDone:true,setupAt:Date.now()},S.docs[loc].has("meta")?"update":"set");
+    toast(`${LOCNAME[loc]} setup done · ${blank.length} hidden`);scheduleRender()});
+}
+function requestSheet(kind,it,text){
+  const from=store.get("from","");let k=kind||"need";let item=it?{id:it.id,name:it.name,size:it.size||"",cat:it.cat}:null;
+  openModal(`<div class="hd"><h2>Request</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>
+   <div class="seg" role="group" aria-label="Request type" id="r_kind"><button type="button" data-k="low">Running low</button><button type="button" data-k="need">Need this</button><button type="button" data-k="other">Other</button></div>
+   <div id="r_item"></div>
+   <div class="field"><label for="r_text">Details</label><textarea id="r_text" placeholder="What do you need, how many, for which job?">${esc(text||"")}</textarea></div>
+   <div class="field"><label for="r_from">Your name</label><input id="r_from" value="${esc(from)}" autocomplete="name"></div>
+   <p class="hint" style="margin:0">This goes to Jordan's request list. It doesn't change the inventory.</p>
+   <div class="err" id="r_err" hidden></div>
+   <div class="btnrow stick"><button class="btn pri" type="button" id="r_send" style="flex:1">Send request</button></div>`,sh=>{
+    const q=s=>sh.querySelector(s);
+    const drawK=()=>sh.querySelectorAll("#r_kind [data-k]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));drawK();
+    q("#r_kind").onclick=e=>{const b=e.target.closest("[data-k]");if(b){k=b.dataset.k;drawK()}};
+    const drawI=()=>{q("#r_item").innerHTML=item?`<div class="conf" style="border-left-color:var(--accent)"><span><b>${esc((item.size?item.size+" ":"")+item.name)}</b><br><span class="upd">${esc(item.cat)}</span></span><button class="btn sm ghost" type="button" id="r_rm">Remove item</button></div>`:"";const rm=q("#r_rm");if(rm)rm.onclick=()=>{item=null;drawI()}};drawI();
+    if(!item)q("#r_text").focus();
+    q("#r_send").onclick=()=>{
+      const t=q("#r_text").value.trim(),f=q("#r_from").value.trim();
+      if(!t&&!item){q("#r_err").hidden=false;q("#r_err").textContent="Say what you need.";return}
+      store.set("from",f);const rid=uid("r");
+      queueWrite(`requests/${rid}`,{kind:k,item,text:t,from:f,by:S.uid||null,at:Date.now(),status:"open"},"set");
+      S.myReqs.add(rid);store.set("myReqs",[...S.myReqs]);closeModal();toast(S.db&&S.online&&navigator.onLine?"Request sent":"Request saved · it'll send when you're back online");scheduleRender();
+    };
+  });
+}
+
+/* ================= events ================= */
+function setLoc(l){S.loc=l;store.set("loc",l);S.open=null;S.select=null;S.hiddenView=false;S.showHidden=false;S.shown=80;renderAll()}
+$("#locVan").onclick=()=>setLoc("van");$("#locShop").onclick=()=>setLoc("shop");
+document.querySelectorAll("[data-start]").forEach(b=>b.onclick=()=>setLoc(b.dataset.start));
+$("#syncBtn").onclick=()=>{if(isOwner()){S.tab="more";renderAll();scrollTo(0,0)}else toast(S.db&&S.online?"Up to date":"Offline · showing the last copy")};
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;S.tab=b.dataset.tab;S.open=null;S.select=null;S.rSticky=new Set();if(S.tab!=="stock")S.hiddenView=false;renderAll();scrollTo(0,0)});
+let qT;$("#q").addEventListener("input",e=>{clearTimeout(qT);$("#qClr").hidden=!e.target.value;qT=setTimeout(()=>{S.q=e.target.value;S.open=null;S.shown=80;S.showHidden=false;renderStock();scrollTo(0,0)},90)});
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur();const first=$("#vStock .row");if(first&&!S.open){S.open=first.dataset.loc+":"+first.dataset.id;renderStock()}}});
+$("#qClr").onclick=()=>{$("#q").value="";S.q="";$("#qClr").hidden=true;S.open=null;S.shown=80;renderStock();$("#q").focus()};
+$("#rail").addEventListener("click",e=>{const b=e.target.closest("[data-g]");if(!b)return;const g=b.dataset.g;S.group=(!g||S.group===g)?null:g;S.open=null;S.shown=80;renderStock();b.scrollIntoView({inline:"nearest",block:"nearest"})});
+function findItem(loc,id){return items(loc).find(i=>i.id===id)}
+function onMainClick(e){
+  const b=e.target.closest("button");if(!b)return;const act=b.dataset.act;const row=b.closest(".row");
+  const it=row?findItem(row.dataset.loc,row.dataset.id):null;
+  if(it&&S.select&&act==="toggle"){S.select.has(it.id)?S.select.delete(it.id):S.select.add(it.id);row.outerHTML=rowHTML(it,{showCat:!!S.q||S.hiddenView});renderSelbar();return}
+  if(it&&b.dataset.lv){writeItem(it,{lvl:b.dataset.lv});S.rSticky=S.rSticky||new Set();S.rSticky.add(it.id);
+    if(S.tab==="refill"||S.tab==="req")scheduleRender();else{const n=findItem(it.loc,it.id);row.outerHTML=rowHTML(n,{showCat:!!S.q});renderTabs()}return}
+  switch(act){
+    case "toggle":{const key=it.loc+":"+it.id;S.open=S.open===key?null:key;const wasReq=S.tab==="req";if(wasReq||S.tab==="refill")scheduleRender();else row.outerHTML=rowHTML(it,{showCat:!!S.q||S.hiddenView});return}
+    case "flag":writeItem(it,{flag:!it.flag});S.rSticky=S.rSticky||new Set();S.rSticky.add(it.id);scheduleRender();return;
+    case "hide":hideItems([it],true);return;
+    case "unhide":hideItems([it],false);return;
+    case "edit":editSheet(it);return;
+    case "reqLow":requestSheet("low",it);return;
+    case "reqNeed":requestSheet("need",it);return;
+    case "reqFree":requestSheet("need",null,S.q.trim());return;
+    case "add":addSheet(S.q);return;
+    case "showHidden":S.showHidden=true;renderStock();return;
+    case "bulk":S.select=new Set();S.open=null;S.tab="stock";renderAll();return;
+    case "finishSetup":finishSetup();return;
+    case "openHidden":S.hiddenView=true;S.tab="stock";S.select=null;S.group=null;renderAll();scrollTo(0,0);return;
+    case "exitHidden":S.hiddenView=false;S.select=null;renderAll();return;
+    case "flush":flush();return;
+    case "useAlt":case "okConf":{const cid=b.closest(".conf").dataset.cid;const c=S.conflicts.find(x=>x.cid===cid);
+      if(act==="useAlt"&&c){const cur=findItem(c.loc,c.id);if(cur)writeItem(cur,{...c.alt});toast("Switched to the other value")}
+      S.conflicts=S.conflicts.filter(x=>x.cid!==cid);store.set("conflicts",S.conflicts);scheduleRender();return}
+    case "reqDone":case "reqDismiss":{const rid=b.closest(".req").dataset.rid;queueWrite(`requests/${rid}`,{status:act==="reqDone"?"done":"dismissed",closedAt:Date.now()});scheduleRender();return}
+    case "reqClear":{const closed=reqList().filter(r=>r.status!=="open");confirmSheet("Clear closed requests?",`${closed.length} closed request${closed.length===1?"":"s"} will be removed for everyone.`,"Clear",()=>{for(const r of closed)queueWrite(`requests/${r._id}`,null,"del");scheduleRender()});return}
+  }
+}
+$("#main").addEventListener("click",onMainClick);
+$("#selDone").onclick=()=>{S.select=null;renderAll()};
+$("#selAll").onclick=()=>{document.querySelectorAll("#vStock .row").forEach(r=>S.select.add(r.dataset.id));renderStock();renderSelbar()};
+$("#selMain").onclick=()=>{const loc=curLoc();const list=items(loc).filter(i=>S.select.has(i.id));if(!list.length)return toast("Tap items to select them.");
+  if(S.hiddenView)hideItems(list,false);else confirmSheet(`Hide ${list.length} item${list.length===1?"":"s"}?`,`They'll leave the ${LOCNAME[loc].toLowerCase()} list and refill list but stay findable in search and in More → Hidden items.`,`Hide ${list.length}`,()=>hideItems(list,true))};
+$("#selLevel").onclick=()=>{const loc=curLoc();const list=items(loc).filter(i=>S.select.has(i.id));if(!list.length)return toast("Tap items to select them.");
+  levelPicker(l=>{writeMany(loc,list,()=>({lvl:l}));S.select=null;toast(`Set ${list.length} item${list.length===1?"":"s"} to ${l}`);scheduleRender()})};
+
+boot();
+</script>
+
+</body></html>
