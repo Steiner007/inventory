@@ -56,7 +56,7 @@ Notes:
 index.html                 Standalone app for GitHub Pages (built, don't edit by hand)
 sw.js                      Service worker: offline support on a website
 manifest.webmanifest       Home-screen app info
-icon.png, icon-192.png, apple-touch-icon.png   Home-screen icons (drawn by tools/make_icon.py)
+icon.png, icon-192.png, apple-touch-icon.png   Home-screen icons (copper pipe + valve, drawn by tools/make_icon.py)
 claude-artifact/           Exact copy published in Claude
 tools/app.src.html         App source (HTML, CSS, JS in one file)
 tools/build.py             Builds index.html from the source + catalog
