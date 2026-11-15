@@ -14,6 +14,12 @@ There are two ways to run it, and they don't do the same things:
 
 The sync, sharing and request features use Claude's built-in artifact storage (`window.claude`). That only exists when the page is opened from Claude. On any other website the app runs in **"this phone only"** mode automatically.
 
+### Carrying changes over from the Claude copy
+
+`data/claude-snapshot.json` holds the van and shop categories that changed in the Claude copy (renames, levels, hidden items, added items and categories). `tools/build.py` puts it into `index.html`. When a phone opens the GitHub version, the snapshot is merged into that phone's data once. For each item, whichever side changed it most recently wins, with stock level and details tracked separately, so nothing newer on the phone is overwritten. To carry over again later, refresh the snapshot, rebuild and push. A new snapshot `id` makes phones merge again.
+
+The repo is public, so the snapshot (including van items and counts) is public too.
+
 ## Put it on GitHub Pages
 
 1. Create a new repository on GitHub (for example `asr-plumbing-inventory`).

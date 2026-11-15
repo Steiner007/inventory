@@ -7,7 +7,11 @@ src = (root / "tools/app.src.html").read_text()
 catalog = (root / "data/catalog.json").read_text()
 json.loads(catalog)  # fail early on bad JSON
 assert "</" not in catalog, "catalog must not contain '</'"
-body = src.replace("__CATALOG__", catalog)
+snap_path = root / "data/claude-snapshot.json"
+snapshot = snap_path.read_text() if snap_path.exists() else "null"
+json.loads(snapshot)
+assert "</" not in snapshot, "snapshot must not contain '</'"
+body = src.replace("__CATALOG__", catalog).replace("__SNAPSHOT__", snapshot)
 head = """<!doctype html>
 <html lang="en">
 <head>

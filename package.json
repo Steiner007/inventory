@@ -5,7 +5,7 @@
   "description": "Phone-first van and shop plumbing inventory for ASR Plumbing.",
   "scripts": {
     "build": "python3 tools/build.py",
-    "test": "node tests/claude-sync.test.js && node tests/standalone-offline.test.js"
+    "test": "node tests/claude-sync.test.js && node tests/standalone-offline.test.js && node tests/snapshot-merge.test.js"
   },
   "devDependencies": {
     "playwright": "1.49.1"

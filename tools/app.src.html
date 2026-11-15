@@ -203,6 +203,7 @@ nav.tabs .badge{position:absolute;top:-11px;right:-15px;background:var(--out);co
 <div id="toast" class="toast" role="status" hidden></div>
 
 <script id="catalog" type="application/json">__CATALOG__</script>
+<script id="snapshot" type="application/json">__SNAPSHOT__</script>
 <script>
 "use strict";
 /* ================= constants & helpers ================= */
@@ -402,6 +403,27 @@ addEventListener("online",()=>{S.online=true;updateSync();if(wake){wake();wake=n
 let cacheT={};function cacheSoon(c){clearTimeout(cacheT[c]);cacheT[c]=setTimeout(()=>store.set("cache."+c,Object.fromEntries(S.remote[c])),1200)}
 
 /* ================= boot ================= */
+/* Changes copied over from the Claude-hosted copy. Merged once per snapshot into this phone's data;
+   for each item, whichever side changed it last wins (stock level and details tracked separately). */
+function applySnapshot(){
+  let snap=null;try{snap=JSON.parse(document.getElementById("snapshot").textContent)}catch(e){return}
+  if(!snap||!snap.id||store.get("snapApplied",null)===snap.id)return;
+  let changed=0;
+  for(const loc of LOCS){const docs=snap[loc]||{};
+    for(const docId in docs){const sd=docs[docId];const ld=S.docs[loc].get(docId);
+      if(docId==="meta"){S.docs[loc].set("meta",{...(ld||{}),setupDone:!!((ld&&ld.setupDone)||sd.setupDone)});continue}
+      if(!ld){S.docs[loc].set(docId,deepMerge({},sd));changed+=Object.keys(sd.items||{}).length;continue}
+      const out={...ld,items:{...(ld.items||{})}};
+      for(const id in (sd.items||{})){const si=sd.items[id],li=out.items[id];
+        if(!si)continue;if(!li){out.items[id]={...si};changed++;continue}
+        const m={...li};let c=false;
+        if((si.sAt||0)>(li.sAt||0)){for(const f of STOCK_F)if(f in si)m[f]=si[f];m.sAt=si.sAt;m.sDev=si.sDev;c=true}
+        if((si.dAt||0)>(li.dAt||0)){for(const f of DETAIL_F)if(f in si)m[f]=si[f];m.dAt=si.dAt;m.dDev=si.dDev;c=true}
+        if(c){out.items[id]=m;changed++}}
+      S.docs[loc].set(docId,out)}}
+  S.itemsCache={};persistLocal();store.set("snapApplied",snap.id);
+  if(changed)setTimeout(()=>toast(`Brought in ${changed} change${changed===1?"":"s"} from the Claude copy`),400);
+}
 function seedLocal(){
   for(const loc of LOCS){const m=new Map();
     CAT.cats.forEach((cat,ci)=>m.set("c"+String(ci+1).padStart(2,"0"),{cat,ord:ci,items:{}}));
@@ -431,6 +453,7 @@ async function boot(){
     S.mode="local";S.role="owner";
     let any=false;for(const col of COLS){const v=store.get("local."+col,null);if(v){S.docs[col]=new Map(Object.entries(v));any=true}}
     if(!any){seedLocal();persistLocal()}
+    applySnapshot();
     for(const col of COLS)S.loadedCols.add(col);
   }else{for(const col of COLS)if(S.remote[col].size)S.loadedCols.add(col)}
   if(!S.role)S.role="viewer";
