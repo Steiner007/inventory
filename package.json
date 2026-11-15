@@ -1,0 +1,13 @@
+{
+  "name": "asr-plumbing-inventory",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Phone-first van and shop plumbing inventory for ASR Plumbing.",
+  "scripts": {
+    "build": "python3 tools/build.py",
+    "test": "node tests/claude-sync.test.js && node tests/standalone-offline.test.js"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}

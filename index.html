@@ -1,4 +1,19 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14202B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Inventory">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
 <title>ASR Plumbing Inventory</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,7 +24,7 @@
   --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#14202B; --muted:#56626F; --line:#D3DAE1;
   --accent:#8F5F00; --accent-bg:#F6E7C4; --accent-ink:#FFFFFF; --focus:#1D5FD1; --scrim:rgba(10,18,26,.5);
   --extra:#1E5DBA; --extra-ink:#FFFFFF; --stocked:#1B7337; --stocked-ink:#FFFFFF; --half:#F0C232; --half-ink:#2B2000;
-  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --warn-bg:#FFF2D6; --warn-ink:#6B4600;
+  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --check:#6A4BB0; --warn-bg:#FFF2D6; --warn-ink:#6B4600;
   --ok:#1B7337; --danger:#B0241C;
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   --r:10px; --nav-h:62px;
@@ -18,13 +33,13 @@
   --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
   --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
   --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
-  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
   --ok:#45B86A; --danger:#F06B60; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
   --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
   --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
-  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
   --ok:#45B86A; --danger:#F06B60; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent}
@@ -73,6 +88,8 @@ main{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 90px)}
 .pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:13.5px;font-weight:700;white-space:nowrap;min-width:64px;justify-content:center}
 .pill.Extra{background:var(--extra);color:var(--extra-ink)} .pill.Stocked{background:var(--stocked);color:var(--stocked-ink)} .pill.Half{background:var(--half);color:var(--half-ink)}
 .pill.Low{background:var(--low);color:var(--low-ink)} .pill.Out{background:var(--out);color:var(--out-ink)} .pill.None{border:1.5px dashed var(--muted);color:var(--muted);padding:2px 9px}
+.pill.Check{background:transparent;border:1.5px solid var(--check);color:var(--check);padding:2px 9px}
+.btn.chk[aria-pressed="true"]{background:transparent;border-color:var(--check);color:var(--check)}
 .pill.Hidden{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
 .selbox{flex:none;width:26px;height:26px;accent-color:var(--accent);pointer-events:none}
 .acts{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
@@ -84,7 +101,7 @@ main{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 90px)}
 .lv[data-lv="Low"][aria-pressed="true"]{background:var(--low);border-color:var(--low);color:var(--low-ink)}
 .lv[data-lv="Out"][aria-pressed="true"]{background:var(--out);border-color:var(--out);color:var(--out-ink)}
 .minor{display:flex;gap:6px;flex-wrap:wrap}
-.minor .btn{flex:1}
+.minor .btn{flex:1;white-space:nowrap;padding:0 8px}
 .btn{min-height:44px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:0 14px;font-weight:700;font-size:15px}
 .btn.sm{min-height:40px;padding:0 11px;font-size:14px}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -285,7 +302,7 @@ const S={mode:"loading",db:null,user:null,uid:null,role:store.get("role",null),
   remote:{van:new Map(),shop:new Map(),requests:new Map()},docs:{van:new Map(),shop:new Map(),requests:new Map()},
   loadedCols:new Set(),queue:store.get("queue",[]),flushing:false,online:false,lastSync:store.get("lastSync",0),
   conflicts:store.get("conflicts",[]),loc:store.get("loc",null),tab:"stock",q:"",group:null,open:null,select:null,showHidden:false,hiddenView:false,
-  shown:80,rSticky:new Set(),itemsCache:{},myReqs:new Set(store.get("myReqs",[])),names:{},readOnly:false};
+  shown:80,rSticky:new Set(),rView:"refill",itemsCache:{},myReqs:new Set(store.get("myReqs",[])),names:{},readOnly:false};
 const isOwner=()=>S.role==="owner";
 const curLoc=()=>isOwner()?(S.loc||"van"):"shop";
 
@@ -454,7 +471,7 @@ function renderTabs(){
   const own=isOwner(),loc=curLoc();
   const refillN=own?visible(loc).filter(needs).length:0;
   const openReq=[...S.docs.requests.values()].filter(r=>r&&r.status==="open").length;
-  const tabs=own?[["stock","Stock"],["refill","Refill",refillN],["req","Requests",openReq],["more","More",S.conflicts.filter(c=>!c.seen).length]]:[["stock","Shop"],["req","Request"]];
+  const tabs=own?[["stock","Stock"],["refill","Refill",refillN],...(S.mode==="local"?[]:[["req","Requests",openReq]]),["more","More",S.conflicts.filter(c=>!c.seen).length]]:[["stock","Shop"],["req","Request"]];
   $("#tabs").innerHTML=tabs.map(([k,l,n])=>`<button type="button" data-tab="${k}" ${S.tab===k?'aria-current="page"':""}><span class="lb">${l}${n?`<span class="badge">${n}</span>`:""}</span></button>`).join("");
 }
 function updateSync(){
@@ -468,6 +485,7 @@ function updateSync(){
 }
 function pillHTML(it){
   if(it.hidden)return`<span class="pill Hidden">Hidden</span>`;
+  if(it.lvl==="Check")return`<span class="pill Check">Check</span>`;
   return`<span class="pill ${it.lvl||"None"}">${it.lvl||"Not set"}</span>`;
 }
 function rowHTML(it,opts={}){
@@ -477,7 +495,7 @@ function rowHTML(it,opts={}){
   if(open){
     if(it.hidden&&own)acts=`<div class="acts"><p class="upd" style="margin:0">Hidden from ${LOCNAME[it.loc]}. Restore it to track it again.</p><div class="minor"><button class="btn pri" type="button" data-act="unhide">Restore to ${LOCNAME[it.loc]}</button><button class="btn" type="button" data-act="edit">Edit</button></div></div>`;
     else if(own)acts=`<div class="acts"><div class="lvls" role="group" aria-label="${LOCNAME[it.loc]} stock level">${LEVELS.map(l=>`<button class="lv" type="button" data-lv="${l}" aria-pressed="${it.lvl===l}">${l}</button>`).join("")}</div>
-      <div class="minor"><button class="btn sm" type="button" data-act="flag" aria-pressed="${!!it.flag}">${it.flag?"⚑ Flagged":"⚑ Flag for refill"}</button><button class="btn sm" type="button" data-act="hide">Hide</button><button class="btn sm" type="button" data-act="edit">Edit</button></div>
+      <div class="minor"><button class="btn sm chk" type="button" data-act="unsure" aria-pressed="${it.lvl==="Check"}">? Check</button><button class="btn sm" type="button" data-act="flag" aria-pressed="${!!it.flag}">${it.flag?"⚑ Flagged":"⚑ Flag"}</button><button class="btn sm" type="button" data-act="hide">Hide</button><button class="btn sm" type="button" data-act="edit">Edit</button></div>
       ${it.sAt&&S.mode!=="local"?`<span class="upd">Updated ${ago(it.sAt)}${it.sDev===DEV?" on this phone":""}</span>`:""}</div>`;
     else acts=`<div class="acts"><div class="minor"><button class="btn sm" type="button" data-act="reqLow" ${S.readOnly?"disabled":""}>Report low</button><button class="btn sm" type="button" data-act="reqNeed" ${S.readOnly?"disabled":""}>Request this</button></div></div>`;
   }
@@ -500,7 +518,7 @@ function renderStock(){
   const m=meta(loc),all=items(loc);
   if(own&&!S.hiddenView&&all.length&&!m.setupDone){
     const counted=all.filter(i=>!i.hidden&&i.lvl).length,blank=all.filter(i=>!i.hidden&&!i.lvl).length;
-    html+=`<div class="banner"><span><b>Setting up ${LOCNAME[loc]}:</b> ${counted} of ${counted+blank} set. When you finish, the ${blank} items still blank get hidden from ${LOCNAME[loc]} (not deleted).</span>
+    html+=`<div class="banner"><span><b>Setting up ${LOCNAME[loc]}:</b> ${counted} of ${counted+blank} set. When you finish, the ${blank} items still blank get hidden from ${LOCNAME[loc]} (not deleted). Items marked “? Check” stay.</span>
       <div class="btnrow"><button class="btn sm pri" type="button" data-act="finishSetup">Finish setup</button><button class="btn sm" type="button" data-act="bulk">Select several</button></div></div>`;
   }
   if(S.hiddenView)html+=`<div class="banner"><span><b>Hidden from ${LOCNAME[loc]}.</b> These aren't tracked or shown in the normal list. Restore any you want back.</span><div class="btnrow"><button class="btn sm" type="button" data-act="bulk">Select several</button><button class="btn sm" type="button" data-act="exitHidden">Back to ${LOCNAME[loc]}</button></div></div>`;
@@ -532,12 +550,17 @@ function renderStock(){
   V.innerHTML=html;
   const sen=$("#sentinel");if(sen){io&&io.disconnect();io=new IntersectionObserver(e=>{if(e[0].isIntersecting){S.shown+=100;renderStock()}},{rootMargin:"700px"});io.observe(sen)}
 }
+const toCheck=it=>!it.hidden&&it.lvl==="Check";
 function renderRefill(){
-  const V=$("#vRefill"),loc=curLoc();
-  const arr=visible(loc).filter(it=>needs(it)||S.rSticky&&S.rSticky.has(it.id)).sort(byOrder);
-  const n=arr.filter(needs).length;
-  let html=`<div class="summary"><span><b>${n}</b> to refill · ${LOCNAME[loc]}</span><span class="upd">Low, Out, or ⚑ flagged</span></div>`;
-  if(!arr.length)html+=`<div class="empty"><h3>Nothing to refill</h3><p>Items marked Low or Out in the ${LOCNAME[loc].toLowerCase()} show up here. Out means you track it and have none; hidden items never show up.</p></div>`;
+  const V=$("#vRefill"),loc=curLoc(),chk=S.rView==="check";
+  const test=chk?toCheck:needs;
+  const vis=visible(loc);const nR=vis.filter(needs).length,nC=vis.filter(toCheck).length;
+  const arr=vis.filter(it=>test(it)||S.rSticky&&S.rSticky.has(it.id)).sort(byOrder);
+  let html=`<div class="seg" role="group" aria-label="List" style="margin-top:12px"><button type="button" data-rv="refill" aria-pressed="${!chk}">Refill (${nR})</button><button type="button" data-rv="check" aria-pressed="${chk}">To check (${nC})</button></div>`;
+  html+=chk?`<div class="summary"><span><b>${nC}</b> to check · ${LOCNAME[loc]}</span><span class="upd">Marked “? Check”</span></div>`
+           :`<div class="summary"><span><b>${nR}</b> to refill · ${LOCNAME[loc]}</span><span class="upd">Low, Out, or ⚑ flagged</span></div>`;
+  if(!arr.length)html+=chk?`<div class="empty"><h3>Nothing to check</h3><p>Tap an item, then “? Check” when you need to look at it later. It shows up here until you pick a real level.</p></div>`
+    :`<div class="empty"><h3>Nothing to refill</h3><p>Items marked Low or Out in the ${LOCNAME[loc].toLowerCase()} show up here. Out means you track it and have none; hidden items never show up.</p></div>`;
   let g=null;for(const it of arr){if(it.cat!==g){if(g!==null)html+=`</div>`;g=it.cat;html+=`<div class="ghead">${esc(g)}</div><div class="list">`}html+=rowHTML(it)}if(g!==null)html+="</div>";
   V.innerHTML=html;
 }
@@ -588,11 +611,11 @@ function renderMore(){
     ${LOCS.map(l=>{const m=meta(l);return`<dl class="kv"><dt>${LOCNAME[l]}</dt><dd>${m.setupDone?`Done · ${visible(l).length} tracked, ${hid(l)} hidden`:`In progress · ${items(l).filter(i=>!i.hidden&&i.lvl).length} set`}</dd></dl>`}).join("")}
     <div class="btnrow"><button class="btn" type="button" data-act="openHidden">Hidden items in ${LOCNAME[loc]} (${hid(loc)})</button>${!meta(loc).setupDone?`<button class="btn pri" type="button" data-act="finishSetup">Finish ${LOCNAME[loc]} setup</button>`:""}</div>
   </div>
-  <div class="sec"><h2>Who can see what</h2>
+  ${S.mode==="local"?`<div class="sec"><h2>This copy</h2><p>This copy is running outside Claude, so both inventories are saved on this phone only. Crew access, shop requests and sync between phones need the Claude-hosted version of this page.</p></div>`:`<div class="sec"><h2>Who can see what</h2>
     <p><b>Van:</b> only you. <b>Shop:</b> anyone you share this page with can search it and see levels, but only you can change it. They can send you requests from the Request tab.</p>
     <ol><li>Open the Share menu on this page in Claude.</li><li>Add each person by email. To send requests, they need <b>Editor</b> (coworkers on the same Team plan can be <b>Contributor</b>). Viewer can look but not send requests.</li><li>Don't turn on a public link. While one is on, invited people outside your account can only view.</li></ol>
     <p>Editor is a sharing level in Claude. The page's own rules still keep both inventories locked to you; Editors can only add requests.</p>
-  </div>
+  </div>`}
   <div class="sec"><h2>Typing tips</h2><p>Sizes work as 1/2, ½, half inch, 1/2", .5 or 1 1/2. Add a word to narrow: “1/2 pex 90”, “3x2 san tee”, “3/4 ball valve”. To talk instead of type, tap the microphone on your phone's keyboard.</p></div>`;
 }
 function renderStart(){
@@ -708,12 +731,12 @@ function hideItems(list,hide){
   toast(`${hide?"Hid":"Restored"} ${list.length} item${list.length===1?"":"s"} ${hide?"from":"to"} ${LOCNAME[loc]}`,()=>{writeMany(loc,list,()=>({hidden:!hide}));scheduleRender()});
 }
 function levelPicker(onPick){
-  openModal(`<div class="hd"><h2>Set level</h2><button class="x" type="button" data-close aria-label="Close">×</button></div><div class="lvls">${LEVELS.map(l=>`<button class="lv" type="button" data-lv="${l}">${l}</button>`).join("")}</div>`,
-    sh=>sh.querySelector(".lvls").onclick=e=>{const b=e.target.closest("[data-lv]");if(b){closeModal();onPick(b.dataset.lv)}});
+  openModal(`<div class="hd"><h2>Set level</h2><button class="x" type="button" data-close aria-label="Close">×</button></div><div class="lvls">${LEVELS.map(l=>`<button class="lv" type="button" data-lv="${l}">${l}</button>`).join("")}</div><button class="btn chk" type="button" data-lv="Check" aria-pressed="true">? Check later</button>`,
+    sh=>sh.onclick=e=>{const b=e.target.closest("[data-lv]");if(b){closeModal();onPick(b.dataset.lv)}});
 }
 function finishSetup(){
   const loc=curLoc();const blank=items(loc).filter(i=>!i.hidden&&!i.lvl);
-  confirmSheet(`Finish ${LOCNAME[loc]} setup?`,`${blank.length} item${blank.length===1?" is":"s are"} still blank. They'll be hidden from the ${LOCNAME[loc].toLowerCase()} list, not deleted. Search still finds them, and you can restore them any time. Items marked Out stay visible.`,`Hide ${blank.length} & finish`,()=>{
+  confirmSheet(`Finish ${LOCNAME[loc]} setup?`,`${blank.length} item${blank.length===1?" is":"s are"} still blank. They'll be hidden from the ${LOCNAME[loc].toLowerCase()} list, not deleted. Search still finds them, and you can restore them any time. Items marked Out or “? Check” stay visible.`,`Hide ${blank.length} & finish`,()=>{
     writeMany(loc,blank,()=>({hidden:true}));
     queueWrite(`${loc}/meta`,{setupDone:true,setupAt:Date.now()},S.docs[loc].has("meta")?"update":"set");
     toast(`${LOCNAME[loc]} setup done · ${blank.length} hidden`);scheduleRender()});
@@ -762,6 +785,7 @@ function onMainClick(e){
     if(S.tab==="refill"||S.tab==="req")scheduleRender();else{const n=findItem(it.loc,it.id);row.outerHTML=rowHTML(n,{showCat:!!S.q});renderTabs()}return}
   switch(act){
     case "toggle":{const key=it.loc+":"+it.id;S.open=S.open===key?null:key;const wasReq=S.tab==="req";if(wasReq||S.tab==="refill")scheduleRender();else row.outerHTML=rowHTML(it,{showCat:!!S.q||S.hiddenView});return}
+    case "unsure":{writeItem(it,{lvl:it.lvl==="Check"?null:"Check"});S.rSticky=S.rSticky||new Set();S.rSticky.add(it.id);if(S.tab==="stock"){row.outerHTML=rowHTML(findItem(it.loc,it.id),{showCat:!!S.q||S.hiddenView});renderTabs()}else scheduleRender();return}
     case "flag":writeItem(it,{flag:!it.flag});S.rSticky=S.rSticky||new Set();S.rSticky.add(it.id);scheduleRender();return;
     case "hide":hideItems([it],true);return;
     case "unhide":hideItems([it],false);return;
@@ -783,7 +807,7 @@ function onMainClick(e){
     case "reqClear":{const closed=reqList().filter(r=>r.status!=="open");confirmSheet("Clear closed requests?",`${closed.length} closed request${closed.length===1?"":"s"} will be removed for everyone.`,"Clear",()=>{for(const r of closed)queueWrite(`requests/${r._id}`,null,"del");scheduleRender()});return}
   }
 }
-$("#main").addEventListener("click",onMainClick);
+$("#main").addEventListener("click",e=>{const v=e.target.closest("[data-rv]");if(v){S.rView=v.dataset.rv;S.rSticky=new Set();S.open=null;renderRefill();return}onMainClick(e)});
 $("#selDone").onclick=()=>{S.select=null;renderAll()};
 $("#selAll").onclick=()=>{document.querySelectorAll("#vStock .row").forEach(r=>S.select.add(r.dataset.id));renderStock();renderSelbar()};
 $("#selMain").onclick=()=>{const loc=curLoc();const list=items(loc).filter(i=>S.select.has(i.id));if(!list.length)return toast("Tap items to select them.");
@@ -794,4 +818,11 @@ $("#selLevel").onclick=()=>{const loc=curLoc();const list=items(loc).filter(i=>S
 boot();
 </script>
 
-</body></html>
+<script>
+// Offline support when hosted on a website (GitHub Pages). Not used inside Claude.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
