@@ -1,4 +1,5 @@
 node_modules/
 test-results/
-*.png
 .DS_Store
+# test screenshots only; the app icons must be committed
+/tests/*.png
