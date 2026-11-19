@@ -24,7 +24,7 @@
   --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#14202B; --muted:#56626F; --line:#D3DAE1;
   --accent:#8F5F00; --accent-bg:#F6E7C4; --accent-ink:#FFFFFF; --focus:#1D5FD1; --scrim:rgba(10,18,26,.5);
   --extra:#1E5DBA; --extra-ink:#FFFFFF; --stocked:#1B7337; --stocked-ink:#FFFFFF; --half:#F0C232; --half-ink:#2B2000;
-  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --check:#6A4BB0; --warn-bg:#FFF2D6; --warn-ink:#6B4600;
+  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --check:#6A4BB0; --packout:#C8202B; --packout-in:#5E1116; --packout-ink:#FFFFFF; --warn-bg:#FFF2D6; --warn-ink:#6B4600;
   --ok:#1B7337; --danger:#B0241C;
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   --r:10px; --nav-h:62px;
@@ -33,13 +33,13 @@
   --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
   --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
   --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
-  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --packout:#B01E27; --packout-in:#3A0B0E; --packout-ink:#FFFFFF; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
   --ok:#45B86A; --danger:#F06B60; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
   --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
   --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
-  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --packout:#B01E27; --packout-in:#3A0B0E; --packout-ink:#FFFFFF; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
   --ok:#45B86A; --danger:#F06B60; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent}
@@ -173,6 +173,38 @@ nav.tabs .badge{position:absolute;top:-11px;right:-15px;background:var(--out);co
 .big .s{color:var(--muted);font-size:15px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);z-index:60;background:var(--ink);color:var(--surface);border-radius:999px;padding:10px 16px;font-weight:600;font-size:14.5px;width:max-content;max-width:calc(100% - 32px);text-align:center;display:flex;gap:12px;align-items:center}
 .toast button{border:0;background:transparent;color:var(--accent);font-weight:700;text-decoration:underline;min-height:32px}
+/* Packout bin blueprint */
+.org{background:var(--packout);border-radius:14px;padding:8px 8px 2px}
+.ogrid{display:grid;gap:5px;background:var(--packout-in);border-radius:9px;padding:5px}
+.bin{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sec{flex:1;min-height:96px;min-width:0;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:5px 5px 4px;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;gap:3px;text-align:left;overflow:hidden}
+.bin.split .sec{min-height:64px}
+.bin.split .sec .lab{font-size:11.5px}
+.sec .lab{font-size:12px;font-weight:700;line-height:1.15;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bin.split .sec .lab{-webkit-line-clamp:2}
+.sec .lab i{font-style:normal;font-weight:500;color:var(--muted)}
+.sec .st{align-self:flex-start;font-size:10.5px;font-weight:800;letter-spacing:.04em;border:1px solid currentColor;border-radius:4px;padding:0 4px;line-height:1.4}
+.sec.st-Out{background:var(--out);border-color:var(--out);color:var(--out-ink)}
+.sec.st-Low{background:var(--low);border-color:var(--low);color:var(--low-ink)}
+.sec.st-Out .lab i,.sec.st-Low .lab i{color:inherit;opacity:.85}
+.sec.st-Check{border:2px solid var(--check)} .sec.st-Check .st{color:var(--check)}
+.sec.st-Half{border-color:var(--half);box-shadow:inset 0 -7px 0 var(--half)}
+.sec.st-Stocked{box-shadow:inset 0 -7px 0 var(--stocked)}
+.sec.st-Extra{box-shadow:inset 0 -7px 0 var(--extra)}
+.sec.st-none{border-style:dashed}
+.org.mini .sec{min-height:30px;padding:0}
+.org.mini .bin.split .sec{min-height:13px}
+.org.mini .sec .lab{display:none}
+.front{color:var(--packout-ink);text-align:center;font-family:var(--f-display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px;padding:5px 0 4px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--muted);margin-top:10px;align-items:center}
+.legend .k{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1.5px solid var(--line);background:var(--surface)}
+.pick{display:flex;gap:10px;align-items:center;width:100%;min-height:54px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left;padding:6px 10px}
+.pick:first-child{border-top:0}
+.pick .box{width:26px;height:26px;border:2px solid var(--line);border-radius:6px;flex:none;display:grid;place-items:center;font-weight:800;color:transparent}
+.pick[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chkrow{display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;min-height:44px}
+.chkrow input{width:24px;height:24px;accent-color:var(--accent)}
+.nm .where{display:block;font-weight:600;font-size:12.5px;color:var(--accent)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .16s ease-out}@keyframes up{from{transform:translateY(20px)}}}
 @media (min-width:700px){ main,.top .inner{max-width:760px;margin-inline:auto} .scrim{align-items:center} .sheet{border-radius:16px;max-height:86%} .stick{position:static;margin:0;padding-bottom:0} }
 @media (max-width:360px){ .lv{font-size:13px} nav.tabs button{font-size:14.5px} }
@@ -196,6 +228,7 @@ nav.tabs .badge{position:absolute;top:-11px;right:-15px;background:var(--out);co
 <main class="wrap" id="main">
   <section id="vStock"></section>
   <section id="vRefill" hidden></section>
+  <section id="vBins" hidden></section>
   <section id="vReq" hidden></section>
   <section id="vMore" hidden></section>
 </main>
@@ -303,7 +336,7 @@ const S={mode:"loading",db:null,user:null,uid:null,role:store.get("role",null),
   remote:{van:new Map(),shop:new Map(),requests:new Map()},docs:{van:new Map(),shop:new Map(),requests:new Map()},
   loadedCols:new Set(),queue:store.get("queue",[]),flushing:false,online:false,lastSync:store.get("lastSync",0),
   conflicts:store.get("conflicts",[]),loc:store.get("loc",null),tab:"stock",q:"",group:null,open:null,select:null,showHidden:false,hiddenView:false,
-  shown:80,rSticky:new Set(),rView:"refill",itemsCache:{},myReqs:new Set(store.get("myReqs",[])),names:{},readOnly:false};
+  shown:80,rSticky:new Set(),rView:"refill",orgSel:null,itemsCache:{},myReqs:new Set(store.get("myReqs",[])),names:{},readOnly:false};
 const isOwner=()=>S.role==="owner";
 const curLoc=()=>isOwner()?(S.loc||"van"):"shop";
 
@@ -483,18 +516,18 @@ function renderAll(){
   $("#locSeg").hidden=!own;$("#viewerTitle").hidden=own;
   $("#locVan").setAttribute("aria-pressed",loc==="van");$("#locShop").setAttribute("aria-pressed",loc==="shop");
   if(!own&&!["stock","req"].includes(S.tab))S.tab="stock";
-  for(const [k,el] of [["stock","#vStock"],["refill","#vRefill"],["req","#vReq"],["more","#vMore"]])$(el).hidden=S.tab!==k;
+  for(const [k,el] of [["stock","#vStock"],["refill","#vRefill"],["bins","#vBins"],["req","#vReq"],["more","#vMore"]])$(el).hidden=S.tab!==k;
   $("#searchHead").hidden=S.tab!=="stock";
   if(S.tab==="more"&&S.conflicts.some(c=>!c.seen)){S.conflicts.forEach(c=>c.seen=true);store.set("conflicts",S.conflicts)}
   renderTabs();updateSync();
-  if(S.tab==="stock")renderStock();else if(S.tab==="refill")renderRefill();else if(S.tab==="req")renderReq();else renderMore();
+  if(S.tab==="stock")renderStock();else if(S.tab==="refill")renderRefill();else if(S.tab==="bins")renderBins();else if(S.tab==="req")renderReq();else renderMore();
   renderStart();renderSelbar(false);
 }
 function renderTabs(){
   const own=isOwner(),loc=curLoc();
-  const refillN=own?visible(loc).filter(needs).length:0;
+  const refillN=own?visible(loc).filter(needs).length+binSecs(loc).filter(x=>x.inf.low&&!x.inf.its.length).length:0;
   const openReq=[...S.docs.requests.values()].filter(r=>r&&r.status==="open").length;
-  const tabs=own?[["stock","Stock"],["refill","Refill",refillN],...(S.mode==="local"?[]:[["req","Requests",openReq]]),["more","More",S.conflicts.filter(c=>!c.seen).length]]:[["stock","Shop"],["req","Request"]];
+  const tabs=own?[["stock","Stock"],["refill","Refill",refillN],["bins","Bins"],...(S.mode==="local"?[]:[["req","Requests",openReq]]),["more","More",S.conflicts.filter(c=>!c.seen).length]]:[["stock","Shop"],["req","Request"]];
   $("#tabs").innerHTML=tabs.map(([k,l,n])=>`<button type="button" data-tab="${k}" ${S.tab===k?'aria-current="page"':""}><span class="lb">${l}${n?`<span class="badge">${n}</span>`:""}</span></button>`).join("");
 }
 function updateSync(){
@@ -522,9 +555,9 @@ function rowHTML(it,opts={}){
       ${it.sAt&&S.mode!=="local"?`<span class="upd">Updated ${ago(it.sAt)}${it.sDev===DEV?" on this phone":""}</span>`:""}</div>`;
     else acts=`<div class="acts"><div class="minor"><button class="btn sm" type="button" data-act="reqLow" ${S.readOnly?"disabled":""}>Report low</button><button class="btn sm" type="button" data-act="reqNeed" ${S.readOnly?"disabled":""}>Request this</button></div></div>`;
   }
-  const showCat=opts.showCat;
+  const showCat=opts.showCat;const where=binIndex(it.loc).get(it.id);
   return`<div class="row${open?" open":""}" data-loc="${it.loc}" data-id="${esc(it.id)}"><button class="rbtn" type="button" data-act="toggle" aria-expanded="${open}">${sel}${it.size?`<span class="size">${esc(it.size)}</span>`:""}
-    <span class="nm">${esc(dispName(it))}${showCat?`<span class="cat">${esc(it.cat)}</span>`:""}</span><span class="right">${it.flag&&!it.hidden?`<span class="flg" aria-label="flagged">⚑</span>`:""}${pillHTML(it)}</span></button>${acts}</div>`;
+    <span class="nm">${esc(dispName(it))}${showCat?`<span class="cat">${esc(it.cat)}</span>`:""}${where?`<span class="where">${esc(where)}</span>`:""}</span><span class="right">${it.flag&&!it.hidden?`<span class="flg" aria-label="flagged">⚑</span>`:""}${pillHTML(it)}</span></button>${acts}</div>`;
 }
 function renderRail(loc){
   const base=S.hiddenView?items(loc).filter(i=>i.hidden):visible(loc);const cnt=new Map();
@@ -577,14 +610,18 @@ const toCheck=it=>!it.hidden&&it.lvl==="Check";
 function renderRefill(){
   const V=$("#vRefill"),loc=curLoc(),chk=S.rView==="check";
   const test=chk?toCheck:needs;
-  const vis=visible(loc);const nR=vis.filter(needs).length,nC=vis.filter(toCheck).length;
+  const vis=visible(loc);
+  const bs=binSecs(loc).filter(x=>!x.inf.its.length&&x.inf.lvl);   // bins tracked by label only (no linked items)
+  const bR=bs.filter(x=>x.inf.low),bC=bs.filter(x=>x.inf.lvl==="Check"),bl=chk?bC:bR;
+  const nR=vis.filter(needs).length+bR.length,nC=vis.filter(toCheck).length+bC.length;
   const arr=vis.filter(it=>test(it)||S.rSticky&&S.rSticky.has(it.id)).sort(byOrder);
   let html=`<div class="seg" role="group" aria-label="List" style="margin-top:12px"><button type="button" data-rv="refill" aria-pressed="${!chk}">Refill (${nR})</button><button type="button" data-rv="check" aria-pressed="${chk}">To check (${nC})</button></div>`;
   html+=chk?`<div class="summary"><span><b>${nC}</b> to check · ${LOCNAME[loc]}</span><span class="upd">Marked “? Check”</span></div>`
            :`<div class="summary"><span><b>${nR}</b> to refill · ${LOCNAME[loc]}</span><span class="upd">Low, Out, or ⚑ flagged</span></div>`;
-  if(!arr.length)html+=chk?`<div class="empty"><h3>Nothing to check</h3><p>Tap an item, then “? Check” when you need to look at it later. It shows up here until you pick a real level.</p></div>`
+  if(!arr.length&&!bl.length)html+=chk?`<div class="empty"><h3>Nothing to check</h3><p>Tap an item, then “? Check” when you need to look at it later. It shows up here until you pick a real level.</p></div>`
     :`<div class="empty"><h3>Nothing to refill</h3><p>Items marked Low or Out in the ${LOCNAME[loc].toLowerCase()} show up here. Out means you track it and have none; hidden items never show up.</p></div>`;
   let g=null;for(const it of arr){if(it.cat!==g){if(g!==null)html+=`</div>`;g=it.cat;html+=`<div class="ghead">${esc(g)}</div><div class="list">`}html+=rowHTML(it)}if(g!==null)html+="</div>";
+  if(bl.length)html+=`<div class="ghead">Packout bins</div><div class="list">${bl.map(x=>`<div class="row"><button class="rbtn" type="button" data-org="${x.o.id}" data-bin="${x.bid}" data-sec="${x.s}"><span class="nm">${esc(x.label||x.nm)}<span class="cat">${esc(x.o.name)} · ${esc(x.nm)}</span></span><span class="right"><span class="pill ${x.inf.lvl}">${x.inf.lvl}</span></span></button></div>`).join("")}</div>`;
   V.innerHTML=html;
 }
 function reqCard(r,own){
@@ -652,6 +689,127 @@ function renderSelbar(re=true){
 async function resolveNames(root){
   if(!S.user)return;const els=[...root.querySelectorAll("[data-by]")];if(!els.length)return;
   try{const ps=await S.user.profiles([...new Set(els.map(e=>e.dataset.by))]);for(const e of els){const p=ps[e.dataset.by];if(p&&p.name)e.textContent=p.isMe?"you":p.name}}catch(e){}
+}
+
+/* ================= Packout organizers: bin blueprints ================= */
+// Layout from the photo: back row 4 small, middle row 2 wide, front row (by the latches) 4 small, one long bin down the center.
+const ORG_O11={cols:5,rows:3,bins:[
+  ["b1",1,1,1,1,"Back 1"],["b2",2,1,1,1,"Back 2"],["long",3,1,1,3,"Long bin"],["b3",4,1,1,1,"Back 3"],["b4",5,1,1,1,"Back 4"],
+  ["ml",1,2,2,1,"Middle left"],["mr",4,2,2,1,"Middle right"],
+  ["f1",1,3,1,1,"Front 1"],["f2",2,3,1,1,"Front 2"],["f3",4,3,1,1,"Front 3"],["f4",5,3,1,1,"Front 4"]]};
+function orgShape(o){
+  if(!o||o.layout==="o11")return ORG_O11;
+  const cols=+o.cols||4,rows=+o.rows||2,bins=[];
+  for(let r=1;r<=rows;r++)for(let c=1;c<=cols;c++)bins.push([`r${r}c${c}`,c,r,1,1,rows===1?`Bin ${c}`:r===1?`Back ${c}`:r===rows?`Front ${c}`:`Row ${r} · ${c}`]);
+  return{cols,rows,bins};
+}
+function orgList(loc){const d=S.docs[loc].get("orgs");if(!d||!d.list)return[];return Object.entries(d.list).filter(([id,o])=>o&&!o.gone).map(([id,o])=>({...o,id})).sort((a,b)=>(a.ord||0)-(b.ord||0))}
+const RANK={Out:6,Low:5,Check:4,Half:3,Stocked:2,Extra:1};
+function itemMap(loc){const k="map:"+loc;if(S.itemsCache[k])return S.itemsCache[k];return S.itemsCache[k]=new Map(items(loc).map(i=>[i.id,i]))}
+function secInfo(loc,sec){
+  sec=sec||{};const m=itemMap(loc);const its=(sec.items||[]).map(id=>m.get(id)).filter(Boolean);let lvl=null;
+  if(its.length){for(const it of its){let l=it.lvl;if(it.flag&&(RANK[l]||0)<RANK.Low)l="Low";if((RANK[l]||0)>(RANK[lvl]||0))lvl=l}}   // worst item decides
+  else lvl=sec.lvl||null;
+  return{lvl,its,low:lvl==="Low"||lvl==="Out"};
+}
+function secLabel(loc,sec,inf){if(!sec)return"";if(sec.label)return sec.label;inf=inf||secInfo(loc,sec);
+  const its=inf.its;if(!its.length)return"";
+  const sz=its[0].size||"";if(its.every(i=>(i.size||"")===sz))return(sz?sz+" ":"")+its.map(i=>dispName(i)).join(", ");   // same size: "1/2 Coupling, Tee"
+  return its.map(i=>(i.size?i.size+" ":"")+dispName(i)).join(", ")}
+const halfName=(b,s)=>b.split?(s==="a"?" · back half":" · front half"):"";
+function binSecs(loc){const k="secs:"+loc;if(S.itemsCache[k])return S.itemsCache[k];const out=[];
+  for(const o of orgList(loc)){for(const [bid,,,,,nm] of orgShape(o).bins){const b=(o.bins||{})[bid]||{};
+    for(const s of b.split?["a","b"]:["a"]){const sec=b[s]||{};const inf=secInfo(loc,sec);out.push({o,bid,s,nm:nm+halfName(b,s),sec,inf,label:secLabel(loc,sec,inf)})}}}
+  return S.itemsCache[k]=out}
+function binIndex(loc){const k="bins:"+loc;if(S.itemsCache[k])return S.itemsCache[k];const m=new Map();
+  for(const x of binSecs(loc))for(const id of (x.sec.items||[]))if(!m.has(id))m.set(id,`${x.o.name} · ${x.nm}`);
+  return S.itemsCache[k]=m}
+function orgWrite(loc,patch){queueWrite(`${loc}/orgs`,S.docs[loc].has("orgs")?patch:deepMerge({list:{}},patch),S.docs[loc].has("orgs")?"update":"set")}
+function binWrite(loc,oid,bid,patch){orgWrite(loc,{list:{[oid]:{bins:{[bid]:patch}}}})}
+function orgGrid(o,mini){
+  const sh=orgShape(o),loc=curLoc();let h=`<div class="org${mini?" mini":""}"><div class="ogrid" style="grid-template-columns:repeat(${sh.cols},minmax(0,1fr))">`;
+  for(const [bid,c,r,cs,rs,nm] of sh.bins){const b=(o.bins||{})[bid]||{};
+    h+=`<div class="bin${b.split?" split":""}" style="grid-column:${c}/span ${cs};grid-row:${r}/span ${rs}">`+(b.split?["a","b"]:["a"]).map(s=>{
+      if(mini)return`<span class="sec st-none"></span>`;
+      const inf=secInfo(loc,b[s]),lab=secLabel(loc,b[s],inf);
+      return`<button class="sec st-${inf.lvl||"none"}" type="button" data-bin="${bid}" data-sec="${s}" aria-label="${esc(nm+halfName(b,s))}: ${esc(lab||"empty")}, ${inf.lvl||"not set"}"><span class="lab">${lab?esc(lab):`<i>${esc(nm)}${b.split?(s==="a"?" back":" front"):""}</i>`}</span>${inf.lvl?`<span class="st">${inf.lvl.toUpperCase()}</span>`:""}</button>`}).join("")+`</div>`}
+  return h+`</div><div class="front">Front · latches</div></div>`;
+}
+function renderBins(){
+  const V=$("#vBins"),loc=curLoc(),list=orgList(loc);
+  if(!list.some(o=>o.id===S.orgSel))S.orgSel=(list[0]||{}).id||null;
+  let html=`<div class="rail" style="padding-top:12px">${list.map(o=>`<button class="chip" type="button" data-org="${esc(o.id)}" aria-pressed="${o.id===S.orgSel}">${esc(o.name)}</button>`).join("")}<button class="chip" type="button" data-act="orgNew">+ New organizer</button></div>`;
+  if(!list.length){V.innerHTML=html+`<div class="empty"><h3>Map your Packouts</h3><p>Lay out each organizer the way it sits in the ${LOCNAME[loc].toLowerCase()}, say what goes in each bin, and see at a glance which bins are low.</p><button class="btn pri" type="button" data-act="orgNew">Add an organizer</button></div>`;return}
+  const o=list.find(x=>x.id===S.orgSel);const secs=binSecs(loc).filter(x=>x.o.id===o.id);const lows=secs.filter(x=>x.inf.low);
+  html+=`<div class="summary"><span><b>${esc(o.name)}</b> · ${lows.length?`<b>${lows.length} low</b>`:"nothing low"}</span><button class="btn sm ghost" type="button" data-act="orgEdit">Edit</button></div>`;
+  html+=orgGrid(o);
+  html+=`<div class="legend"><span><span class="k" style="background:var(--out);border-color:var(--out)"></span>Out</span><span><span class="k" style="background:var(--low);border-color:var(--low)"></span>Low</span><span><span class="k" style="border:2px solid var(--check)"></span>Check</span><span><span class="k" style="box-shadow:inset 0 -5px 0 var(--half)"></span>Half</span><span><span class="k" style="box-shadow:inset 0 -5px 0 var(--stocked)"></span>Stocked</span><span><span class="k" style="border-style:dashed"></span>Not set</span></div>`;
+  if(lows.length)html+=`<div class="ghead">Low in ${esc(o.name)}</div><div class="list">${lows.map(x=>`<div class="row"><button class="rbtn" type="button" data-bin="${x.bid}" data-sec="${x.s}"><span class="nm">${esc(x.label||x.nm)}<span class="cat">${esc(x.nm)}</span></span><span class="right"><span class="pill ${x.inf.lvl}">${x.inf.lvl}</span></span></button></div>`).join("")}</div>`;
+  html+=`<p class="upd" style="margin-top:12px">Tap a bin to say what's in it or update it. A bin turns orange or red when anything in it is Low or Out.</p>`;
+  V.innerHTML=html;
+}
+function orgSheet(o){
+  const loc=curLoc(),isNew=!o;let lay="o11";
+  openModal(`<div class="hd"><h2>${isNew?"New organizer":"Edit organizer"}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>
+   <div class="field"><label for="o_name">Name</label><input id="o_name" value="${esc(o?o.name:`Packout ${orgList(loc).length+1}`)}" placeholder="e.g. PEX organizer" autocomplete="off"></div>
+   ${isNew?`<div class="field"><span class="lab">Layout</span>
+     <div class="seg" role="group" aria-label="Layout" id="o_lay"><button type="button" data-l="o11">11 bins (photo)</button><button type="button" data-l="grid">Even grid</button></div>
+     <div class="two" id="o_grid" hidden><div class="field"><label for="o_cols">Bins across</label><select id="o_cols">${[2,3,4,5,6].map(n=>`<option ${n===4?"selected":""}>${n}</option>`).join("")}</select></div>
+       <div class="field"><label for="o_rows">Rows</label><select id="o_rows">${[1,2,3,4].map(n=>`<option ${n===2?"selected":""}>${n}</option>`).join("")}</select></div></div>
+     <label class="chkrow"><input type="checkbox" id="o_split" checked> Split the front row into 2 sections</label>
+     <div id="o_prev"></div></div>`:`<p class="hint" style="margin:0">To change the layout, add a new organizer and delete this one. Any bin can be split or merged from the bin itself.</p>`}
+   <div class="err" id="o_err" hidden></div>
+   <div class="btnrow stick"><button class="btn pri" type="button" id="o_save" style="flex:1">${isNew?"Add organizer":"Save"}</button>${isNew?"":`<button class="btn ghost" type="button" id="o_del">Delete</button>`}</div>`,sh=>{
+    const q=x=>sh.querySelector(x);
+    const draft=()=>{const d={name:q("#o_name").value.trim(),layout:lay,cols:lay==="grid"?+q("#o_cols").value:5,rows:lay==="grid"?+q("#o_rows").value:3,bins:{}};
+      if(q("#o_split").checked){const shp=orgShape(d);for(const [bid,,r,,rs] of shp.bins)if(r+rs-1===shp.rows&&rs===1)d.bins[bid]={split:true}}return d};
+    const prev=()=>{if(!isNew)return;sh.querySelectorAll("#o_lay [data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lay));q("#o_grid").hidden=lay!=="grid";q("#o_prev").innerHTML=orgGrid(draft(),true)};
+    if(isNew){prev();q("#o_lay").onclick=e=>{const b=e.target.closest("[data-l]");if(b){lay=b.dataset.l;prev()}};["#o_cols","#o_rows","#o_split"].forEach(x=>q(x).onchange=prev)}
+    q("#o_save").onclick=()=>{const name=q("#o_name").value.trim();if(!name){q("#o_err").hidden=false;q("#o_err").textContent="Give it a name.";return}
+      if(isNew){const d=draft();const id=uid("o");orgWrite(loc,{list:{[id]:{...d,name,ord:Date.now(),created:Date.now()}}});S.orgSel=id;toast(`Added ${name}`)}
+      else{orgWrite(loc,{list:{[o.id]:{name}}});toast("Saved")}
+      closeModal();scheduleRender()};
+    const del=q("#o_del");if(del)del.onclick=()=>{closeModal();confirmSheet(`Delete ${o.name}?`,"The bin map goes away. Your items and stock levels stay in the inventory.","Delete",()=>{orgWrite(loc,{list:{[o.id]:{gone:true}}});S.orgSel=null;scheduleRender()},true)};
+  });
+}
+function binSheet(oid,bid,s){
+  const loc=curLoc();S.orgSel=oid;
+  const cur=()=>{const o=orgList(loc).find(x=>x.id===oid);if(!o)return null;const def=orgShape(o).bins.find(x=>x[0]===bid);if(!def)return null;const b=(o.bins||{})[bid]||{};return{o,nm:def[5],b,sec:b[s]||{}}};
+  const c0=cur();if(!c0)return;
+  openModal(`<div class="hd"><div><h2 id="b_title"></h2><span class="upd" id="b_sub"></span></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
+   <div class="field"><label for="b_label">What goes here</label><input id="b_label" value="${esc(c0.sec.label||"")}" placeholder="e.g. 1/2 PEX rings" autocomplete="off"><span class="hint">Optional. Add items below to track them by level.</span></div>
+   <div id="b_body" style="display:flex;flex-direction:column;gap:12px"></div>
+   <div class="field"><label for="b_find">Items in this ${c0.b.split?"section":"bin"}</label><input id="b_find" type="search" placeholder="Search to add: 1/2 pex ring, 3/4 coupling…" autocomplete="off" autocorrect="off" spellcheck="false"><div class="list" id="b_res" hidden></div></div>
+   <div class="btnrow stick"><button class="btn pri" type="button" data-close style="flex:1">Done</button><button class="btn" type="button" id="b_split"></button></div>`,sh=>{
+    const q=x=>sh.querySelector(x);
+    const draw=()=>{const c=cur();if(!c){closeModal();return}const inf=secInfo(loc,c.sec);
+      q("#b_title").textContent=c.nm+halfName(c.b,s);q("#b_sub").textContent=c.o.name;
+      q("#b_split").textContent=c.b.split?"Make it one bin":"Split into 2 sections";
+      q("#b_body").innerHTML=inf.its.length
+        ?`<div class="field"><span class="lab">Tap an item to update it</span><div class="list">${inf.its.map(it=>rowHTML(it,{showCat:true})).join("")}</div></div>`
+        :`<div class="field"><span class="lab">Level for this ${c.b.split?"section":"bin"}</span><div class="lvls" id="b_lv">${LEVELS.map(l=>`<button class="lv" type="button" data-blv="${l}" aria-pressed="${c.sec.lvl===l}">${l}</button>`).join("")}</div>
+           <button class="btn sm chk" type="button" data-blv="Check" aria-pressed="${c.sec.lvl==="Check"}">? Check</button></div>`;
+      drawRes()};
+    const drawRes=()=>{const c=cur();if(!c)return;const toks=tokenize(q("#b_find").value);const R=q("#b_res");
+      if(!toks.length){R.hidden=true;R.innerHTML="";return}
+      const have=new Set(c.sec.items||[]);const idx=binIndex(loc);
+      const res=items(loc).map(it=>[it,score(it,toks)]).filter(x=>x[1]>=0).sort((a,b)=>b[1]-a[1]||byOrder(a[0],b[0])).slice(0,40).map(x=>x[0]);
+      R.hidden=false;R.innerHTML=res.length?res.map(it=>{const w=idx.get(it.id);return`<button class="pick" type="button" data-pick="${esc(it.id)}" aria-pressed="${have.has(it.id)}"><span class="box">✓</span>${it.size?`<span class="size">${esc(it.size)}</span>`:""}<span class="nm">${esc(dispName(it))}<span class="cat">${esc(it.cat)}${it.hidden?" · hidden":""}</span>${w&&!have.has(it.id)?`<span class="where">${esc(w)}</span>`:""}</span></button>`}).join(""):`<p class="upd" style="padding:10px;margin:0">No items match. Add it from the Stock tab with the + button first.</p>`};
+    const saveLabel=()=>{const c=cur();if(!c)return;const v=q("#b_label").value.trim();if(v!==(c.sec.label||"")){binWrite(loc,oid,bid,{[s]:{label:v}});scheduleRender()}};
+    q("#b_label").addEventListener("change",saveLabel);q("#b_label").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}});
+    let ft;q("#b_find").addEventListener("input",()=>{clearTimeout(ft);ft=setTimeout(drawRes,90)});
+    sh.addEventListener("click",e=>{
+      const pk=e.target.closest("[data-pick]");
+      if(pk){const c=cur();const list=[...(c.sec.items||[])];const id=pk.dataset.pick;const i=list.indexOf(id);if(i>=0)list.splice(i,1);else list.push(id);
+        binWrite(loc,oid,bid,{[s]:{items:list}});const it=findItem(loc,id);if(i<0&&it&&it.hidden)writeItem(it,{hidden:false});draw();scheduleRender();return}
+      const lv=e.target.closest("[data-blv]");
+      if(lv){const c=cur();const v=c.sec.lvl===lv.dataset.blv?null:lv.dataset.blv;binWrite(loc,oid,bid,{[s]:{lvl:v,lvlAt:Date.now()}});draw();scheduleRender();return}
+      if(e.target.closest("#b_split")){const c=cur();saveLabel();binWrite(loc,oid,bid,{split:!c.b.split});closeModal();scheduleRender();
+        toast(c.b.split?`${c.nm} is one bin again`:`${c.nm} split into back and front halves`);return}
+      if(e.target.closest(".row")){onMainClick(e);setTimeout(()=>{draw();scheduleRender()},0)}
+    });
+    draw();
+  });
 }
 
 /* ================= modals ================= */
@@ -805,7 +963,7 @@ function onMainClick(e){
   const it=row?findItem(row.dataset.loc,row.dataset.id):null;
   if(it&&S.select&&act==="toggle"){S.select.has(it.id)?S.select.delete(it.id):S.select.add(it.id);row.outerHTML=rowHTML(it,{showCat:!!S.q||S.hiddenView});renderSelbar();return}
   if(it&&b.dataset.lv){writeItem(it,{lvl:b.dataset.lv});S.rSticky=S.rSticky||new Set();S.rSticky.add(it.id);
-    if(S.tab==="refill"||S.tab==="req")scheduleRender();else{const n=findItem(it.loc,it.id);row.outerHTML=rowHTML(n,{showCat:!!S.q});renderTabs()}return}
+    if(S.tab==="refill"||S.tab==="req")scheduleRender();else{if(S.tab==="bins")scheduleRender();const n=findItem(it.loc,it.id);row.outerHTML=rowHTML(n,{showCat:!!S.q});renderTabs()}return}
   switch(act){
     case "toggle":{const key=it.loc+":"+it.id;S.open=S.open===key?null:key;const wasReq=S.tab==="req";if(wasReq||S.tab==="refill")scheduleRender();else row.outerHTML=rowHTML(it,{showCat:!!S.q||S.hiddenView});return}
     case "unsure":{writeItem(it,{lvl:it.lvl==="Check"?null:"Check"});S.rSticky=S.rSticky||new Set();S.rSticky.add(it.id);if(S.tab==="stock"){row.outerHTML=rowHTML(findItem(it.loc,it.id),{showCat:!!S.q||S.hiddenView});renderTabs()}else scheduleRender();return}
@@ -817,6 +975,8 @@ function onMainClick(e){
     case "reqNeed":requestSheet("need",it);return;
     case "reqFree":requestSheet("need",null,S.q.trim());return;
     case "add":addSheet(S.q);return;
+    case "orgNew":orgSheet();return;
+    case "orgEdit":orgSheet(orgList(curLoc()).find(o=>o.id===S.orgSel));return;
     case "showHidden":S.showHidden=true;renderStock();return;
     case "bulk":S.select=new Set();S.open=null;S.tab="stock";renderAll();return;
     case "finishSetup":finishSetup();return;
@@ -830,7 +990,10 @@ function onMainClick(e){
     case "reqClear":{const closed=reqList().filter(r=>r.status!=="open");confirmSheet("Clear closed requests?",`${closed.length} closed request${closed.length===1?"":"s"} will be removed for everyone.`,"Clear",()=>{for(const r of closed)queueWrite(`requests/${r._id}`,null,"del");scheduleRender()});return}
   }
 }
-$("#main").addEventListener("click",e=>{const v=e.target.closest("[data-rv]");if(v){S.rView=v.dataset.rv;S.rSticky=new Set();S.open=null;renderRefill();return}onMainClick(e)});
+$("#main").addEventListener("click",e=>{const v=e.target.closest("[data-rv]");if(v){S.rView=v.dataset.rv;S.rSticky=new Set();S.open=null;renderRefill();return}
+  const bn=e.target.closest("[data-bin]");if(bn){binSheet(bn.dataset.org||S.orgSel,bn.dataset.bin,bn.dataset.sec||"a");return}
+  const og=e.target.closest("[data-org]");if(og){S.orgSel=og.dataset.org;renderBins();return}
+  onMainClick(e)});
 $("#selDone").onclick=()=>{S.select=null;renderAll()};
 $("#selAll").onclick=()=>{document.querySelectorAll("#vStock .row").forEach(r=>S.select.add(r.dataset.id));renderStock();renderSelbar()};
 $("#selMain").onclick=()=>{const loc=curLoc();const list=items(loc).filter(i=>S.select.has(i.id));if(!list.length)return toast("Tap items to select them.");
