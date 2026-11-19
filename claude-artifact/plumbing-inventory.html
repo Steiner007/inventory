@@ -8,7 +8,7 @@
   --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#14202B; --muted:#56626F; --line:#D3DAE1;
   --accent:#8F5F00; --accent-bg:#F6E7C4; --accent-ink:#FFFFFF; --focus:#1D5FD1; --scrim:rgba(10,18,26,.5);
   --extra:#1E5DBA; --extra-ink:#FFFFFF; --stocked:#1B7337; --stocked-ink:#FFFFFF; --half:#F0C232; --half-ink:#2B2000;
-  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --check:#6A4BB0; --packout:#C8202B; --packout-in:#5E1116; --packout-ink:#FFFFFF; --warn-bg:#FFF2D6; --warn-ink:#6B4600;
+  --low:#C15209; --low-ink:#FFFFFF; --out:#B0241C; --out-ink:#FFFFFF; --flag:#B57A00; --check:#6A4BB0; --packout:#D2252D; --packout-deep:#A9161E; --packout-in:#24272B; --packout-ink:#FFFFFF; --bin-bg:#E9EDF0; --bin-slot:#D9DEE3; --bin-edge:#B9C1C9; --bin-tex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='24'%3E%3Cpath d='M7 0l7 4v8l-7 4-7-4V4zM7 16v8' fill='none' stroke='%23000' stroke-opacity='.06'/%3E%3C/svg%3E"); --warn-bg:#FFF2D6; --warn-ink:#6B4600;
   --ok:#1B7337; --danger:#B0241C;
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   --r:10px; --nav-h:62px;
@@ -17,13 +17,13 @@
   --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
   --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
   --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
-  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --packout:#B01E27; --packout-in:#3A0B0E; --packout-ink:#FFFFFF; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --packout:#B91F27; --packout-deep:#86121A; --packout-in:#121417; --packout-ink:#FFFFFF; --bin-bg:#2B3640; --bin-slot:#24303A; --bin-edge:#46535F; --bin-tex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='24'%3E%3Cpath d='M7 0l7 4v8l-7 4-7-4V4zM7 16v8' fill='none' stroke='%23fff' stroke-opacity='.06'/%3E%3C/svg%3E"); --warn-bg:#3A2E14; --warn-ink:#F5D79A;
   --ok:#45B86A; --danger:#F06B60; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F151B; --surface:#18212A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#9AA8B5; --line:#2C3946;
   --accent:#E2AE48; --accent-bg:#3A2E14; --accent-ink:#1A1300; --focus:#7FB0FF; --scrim:rgba(0,0,0,.62);
   --extra:#5B95F0; --extra-ink:#08162B; --stocked:#45B86A; --stocked-ink:#04190B; --half:#F2CA4B; --half-ink:#241B00;
-  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --packout:#B01E27; --packout-in:#3A0B0E; --packout-ink:#FFFFFF; --warn-bg:#3A2E14; --warn-ink:#F5D79A;
+  --low:#F08A3C; --low-ink:#2A1100; --out:#F06B60; --out-ink:#2A0603; --flag:#F2BE4A; --check:#B9A0F2; --packout:#B91F27; --packout-deep:#86121A; --packout-in:#121417; --packout-ink:#FFFFFF; --bin-bg:#2B3640; --bin-slot:#24303A; --bin-edge:#46535F; --bin-tex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='24'%3E%3Cpath d='M7 0l7 4v8l-7 4-7-4V4zM7 16v8' fill='none' stroke='%23fff' stroke-opacity='.06'/%3E%3C/svg%3E"); --warn-bg:#3A2E14; --warn-ink:#F5D79A;
   --ok:#45B86A; --danger:#F06B60; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent}
@@ -157,29 +157,39 @@ nav.tabs .badge{position:absolute;top:-11px;right:-15px;background:var(--out);co
 .big .s{color:var(--muted);font-size:15px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);z-index:60;background:var(--ink);color:var(--surface);border-radius:999px;padding:10px 16px;font-weight:600;font-size:14.5px;width:max-content;max-width:calc(100% - 32px);text-align:center;display:flex;gap:12px;align-items:center}
 .toast button{border:0;background:transparent;color:var(--accent);font-weight:700;text-decoration:underline;min-height:32px}
-/* Packout bin blueprint */
-.org{background:var(--packout);border-radius:14px;padding:8px 8px 2px}
-.ogrid{display:grid;gap:5px;background:var(--packout-in);border-radius:9px;padding:5px}
-.bin{display:flex;flex-direction:column;gap:4px;min-width:0}
-.sec{flex:1;min-height:96px;min-width:0;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:5px 5px 4px;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;gap:3px;text-align:left;overflow:hidden}
-.bin.split .sec{min-height:64px}
-.bin.split .sec .lab{font-size:11.5px}
-.sec .lab{font-size:12px;font-weight:700;line-height:1.15;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.bin.split .sec .lab{-webkit-line-clamp:2}
-.sec .lab i{font-style:normal;font-weight:500;color:var(--muted)}
-.sec .st{align-self:flex-start;font-size:10.5px;font-weight:800;letter-spacing:.04em;border:1px solid currentColor;border-radius:4px;padding:0 4px;line-height:1.4}
-.sec.st-Out{background:var(--out);border-color:var(--out);color:var(--out-ink)}
-.sec.st-Low{background:var(--low);border-color:var(--low);color:var(--low-ink)}
-.sec.st-Out .lab i,.sec.st-Low .lab i{color:inherit;opacity:.85}
-.sec.st-Check{border:2px solid var(--check)} .sec.st-Check .st{color:var(--check)}
-.sec.st-Half{border-color:var(--half);box-shadow:inset 0 -7px 0 var(--half)}
-.sec.st-Stocked{box-shadow:inset 0 -7px 0 var(--stocked)}
-.sec.st-Extra{box-shadow:inset 0 -7px 0 var(--extra)}
-.sec.st-none{border-style:dashed}
-.org.mini .sec{min-height:30px;padding:0}
-.org.mini .bin.split .sec{min-height:13px}
-.org.mini .sec .lab{display:none}
-.front{color:var(--packout-ink);text-align:center;font-family:var(--f-display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px;padding:5px 0 4px}
+/* Packout bin blueprint: top-down organizer at real proportions (19.7 x 15.2 in outside, 18 x 12 in inside) */
+.pk{position:relative;width:100%;aspect-ratio:19.7/15.2;margin-top:4px;border-radius:5.5%/7%;background:linear-gradient(170deg,var(--packout) 0%,var(--packout-deep) 100%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18),inset 0 -6px 10px rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.28)}
+.pk.grid{aspect-ratio:4/3}
+.pk-in{position:absolute;left:4.3%;right:4.3%;top:7.6%;bottom:13.4%;background:var(--packout-in);border-radius:2.2%/3.2%;box-shadow:inset 0 2px 6px rgba(0,0,0,.55);padding:1.1%;display:grid;gap:1.1%}
+.pk.grid .pk-in{left:4%;right:4%;top:6%;bottom:12%}
+.latch{position:absolute;bottom:3.2%;width:11%;height:6.2%;border-radius:3px;background:linear-gradient(#e9edf1,#9aa3ad);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.4)}
+.latch::after{content:"";position:absolute;left:18%;right:18%;top:38%;height:24%;border-radius:2px;background:rgba(0,0,0,.28)}
+.pk-front{position:absolute;left:0;right:0;bottom:3.6%;text-align:center;color:var(--packout-ink);font-family:var(--f-display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:10.5px;pointer-events:none}
+.pkdims{font-size:12.5px;color:var(--muted);margin-top:6px;text-align:center}
+.bin{display:flex;min-width:0;min-height:0;gap:0;border-radius:5px;overflow:hidden;background:var(--bin-bg);box-shadow:inset 0 0 0 1.5px var(--bin-edge)}
+.bin.v{flex-direction:row}.bin.h{flex-direction:column}
+.bin.slot{background:var(--bin-slot)}
+.bsec{flex:1;min-width:0;min-height:0;container-type:size;-webkit-appearance:none;appearance:none;border:0;border-radius:0;font:inherit;background:var(--bin-tex),var(--bin-bg);background-size:14px 24px,auto;color:var(--ink);padding:0;display:block;text-align:left;overflow:hidden;position:relative}
+.bsec .in{display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;gap:2px;height:100%;padding:4px 4px 3px}
+.bin.slot .bsec{background:var(--bin-tex),var(--bin-slot);background-size:14px 24px,auto}
+.bin.h .bsec+.bsec{box-shadow:inset 0 2px 0 var(--bin-edge)}
+.bin.v .bsec+.bsec{box-shadow:inset 2px 0 0 var(--bin-edge)}
+.bsec .lab{font-size:11px;font-weight:700;line-height:1.12;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bin.h .bsec .lab{-webkit-line-clamp:2}
+.bsec .lab i{font-style:normal;font-weight:500;color:var(--muted)}
+.bsec .st{align-self:flex-start;font-size:9.5px;font-weight:800;letter-spacing:.03em;border:1px solid currentColor;border-radius:3px;padding:0 3px;line-height:1.35}
+@container (max-height:46px){.bsec .in{flex-direction:row;align-items:center;justify-content:flex-start;gap:4px;padding:2px 4px}.bsec .lab{-webkit-line-clamp:1;flex:1}.bsec .st{align-self:center;flex:none}}
+@container (max-height:24px){.bsec .lab{display:none}}
+@container (max-width:46px){.bsec .lab{-webkit-line-clamp:2;font-size:10px}.bsec .st{font-size:8.5px;padding:0 2px}}
+@container (max-width:30px){.bsec .lab{display:none}.bsec .st{writing-mode:vertical-rl;align-self:center}}
+.bsec.st-Out{background:var(--out);color:var(--out-ink)}
+.bsec.st-Low{background:var(--low);color:var(--low-ink)}
+.bsec.st-Out .lab i,.bsec.st-Low .lab i{color:inherit;opacity:.85}
+.bsec.st-Check{box-shadow:inset 0 0 0 2.5px var(--check)!important} .bsec.st-Check .st{color:var(--check)}
+.bsec.st-Half{box-shadow:inset 0 -6px 0 var(--half)!important}
+.bsec.st-Stocked{box-shadow:inset 0 -6px 0 var(--stocked)!important}
+.bsec.st-Extra{box-shadow:inset 0 -6px 0 var(--extra)!important}
+.pk.mini{pointer-events:none}.pk.mini .bsec{padding:0}.pk.mini .lab,.pk.mini .st{display:none}.pk.mini .pk-front{font-size:8px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--muted);margin-top:10px;align-items:center}
 .legend .k{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1.5px solid var(--line);background:var(--surface)}
 .pick{display:flex;gap:10px;align-items:center;width:100%;min-height:54px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left;padding:6px 10px}
@@ -189,6 +199,15 @@ nav.tabs .badge{position:absolute;top:-11px;right:-15px;background:var(--out);co
 .chkrow{display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;min-height:44px}
 .chkrow input{width:24px;height:24px;accent-color:var(--accent)}
 .nm .where{display:block;font-weight:600;font-size:12.5px;color:var(--accent)}
+.divrow{display:flex;gap:6px;flex-wrap:wrap}
+.divrow .btn{flex:1;min-width:0}
+.cnt{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.cnt .btn{padding:0}
+.divprev{display:flex;gap:0;height:56px;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--bin-edge);background:var(--bin-bg)}
+.divprev.h{flex-direction:column}
+.divprev span{flex:1}
+.divprev.h span+span{box-shadow:inset 0 2px 0 var(--bin-edge)}.divprev.v span+span{box-shadow:inset 2px 0 0 var(--bin-edge)}
+.divprev span.me{background:var(--accent-bg)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .16s ease-out}@keyframes up{from{transform:translateY(20px)}}}
 @media (min-width:700px){ main,.top .inner{max-width:760px;margin-inline:auto} .scrim{align-items:center} .sheet{border-radius:16px;max-height:86%} .stick{position:static;margin:0;padding-bottom:0} }
 @media (max-width:360px){ .lv{font-size:13px} nav.tabs button{font-size:14.5px} }
@@ -653,23 +672,45 @@ async function resolveNames(root){
 }
 
 /* ================= Packout organizers: bin blueprints ================= */
-// Layout from the photo: back row 4 small, middle row 2 wide, front row (by the latches) 2 wide, one long bin down the center.
-const ORG_O9={cols:5,rows:3,bins:[
-  ["b1",1,1,1,1,"Back 1"],["b2",2,1,1,1,"Back 2"],["long",3,1,1,3,"Long bin"],["b3",4,1,1,1,"Back 3"],["b4",5,1,1,1,"Back 4"],
-  ["ml",1,2,2,1,"Middle left"],["mr",4,2,2,1,"Middle right"],
-  ["fl",1,3,2,1,"Front left"],["fr",4,3,2,1,"Front right"]]};
-// Earlier default (4 small front bins); kept so organizers made with it still show correctly.
-const ORG_O11={cols:5,rows:3,bins:[
-  ["b1",1,1,1,1,"Back 1"],["b2",2,1,1,1,"Back 2"],["long",3,1,1,3,"Long bin"],["b3",4,1,1,1,"Back 3"],["b4",5,1,1,1,"Back 4"],
-  ["ml",1,2,2,1,"Middle left"],["mr",4,2,2,1,"Middle right"],
-  ["f1",1,3,1,1,"Front 1"],["f2",2,3,1,1,"Front 2"],["f3",4,3,1,1,"Front 3"],["f4",5,3,1,1,"Front 4"]]};
-function orgShape(o){
-  if(!o||o.layout==="o9")return ORG_O9;
-  if(o.layout==="o11")return ORG_O11;
-  const cols=+o.cols||4,rows=+o.rows||2,bins=[];
-  for(let r=1;r<=rows;r++)for(let c=1;c<=cols;c++)bins.push([`r${r}c${c}`,c,r,1,1,rows===1?`Bin ${c}`:r===1?`Back ${c}`:r===rows?`Front ${c}`:`Row ${r} · ${c}`]);
-  return{cols,rows,bins};
+// Milwaukee PACKOUT Organizer (48-22-8430): 19.7 x 15.2 in outside, 18 x 12 in inside, 8 small + 2 large bins,
+// built-in center slot for long bits/blades. Grid: 2 bin columns each side of the slot, 3 rows (back, middle, front).
+// Default matches Jordan's setup: back and middle rows are small bins, each side's front is one large bin.
+const SECKEYS=["a","b","c","d","e","f"];
+const PK_COLS="1fr 1fr .62fr 1fr 1fr";
+function cellsFor(o){
+  if(o.cells&&o.cells.length)return o.cells;
+  const L=o.layout||"pk";
+  if(L==="pk")return[{id:"r1c1",c:1,r:1},{id:"r1c2",c:2,r:1},{id:"r1c4",c:4,r:1},{id:"r1c5",c:5,r:1},
+    {id:"r2c1",c:1,r:2},{id:"r2c2",c:2,r:2},{id:"r2c4",c:4,r:2},{id:"r2c5",c:5,r:2},
+    {id:"fl",c:1,r:3,w:2},{id:"fr",c:4,r:3,w:2},{id:"slot",c:3,r:1,h:3,slot:1}];
+  // earlier layouts, kept so organizers made with them still show their bins
+  if(L==="o9")return[{id:"b1",c:1,r:1,name:"Back 1"},{id:"b2",c:2,r:1,name:"Back 2"},{id:"long",c:3,r:1,h:3,slot:1,name:"Long bin"},{id:"b3",c:4,r:1,name:"Back 3"},{id:"b4",c:5,r:1,name:"Back 4"},
+    {id:"ml",c:1,r:2,w:2,name:"Middle left"},{id:"mr",c:4,r:2,w:2,name:"Middle right"},{id:"fl",c:1,r:3,w:2,name:"Front left"},{id:"fr",c:4,r:3,w:2,name:"Front right"}];
+  if(L==="o11")return[{id:"b1",c:1,r:1,name:"Back 1"},{id:"b2",c:2,r:1,name:"Back 2"},{id:"long",c:3,r:1,h:3,slot:1,name:"Long bin"},{id:"b3",c:4,r:1,name:"Back 3"},{id:"b4",c:5,r:1,name:"Back 4"},
+    {id:"ml",c:1,r:2,w:2,name:"Middle left"},{id:"mr",c:4,r:2,w:2,name:"Middle right"},{id:"f1",c:1,r:3,name:"Front 1"},{id:"f2",c:2,r:3,name:"Front 2"},{id:"f3",c:4,r:3,name:"Front 3"},{id:"f4",c:5,r:3,name:"Front 4"}];
+  const cols=+o.cols||4,rows=+o.rows||2,out=[];
+  for(let r=1;r<=rows;r++)for(let c=1;c<=cols;c++)out.push({id:`r${r}c${c}`,c,r});
+  return out;
 }
+function orgShape(o){
+  const grid=!(!o.layout||o.layout==="pk"||o.layout==="o9"||o.layout==="o11");
+  const cols=grid?(+o.cols||4):5,rows=grid?(+o.rows||2):3;
+  const tpl=grid?`repeat(${cols},minmax(0,1fr))`:PK_COLS;
+  const cells=cellsFor(o).map(x=>({w:1,h:1,...x})).map(x=>({...x,name:x.name||cellName(o,x,grid,rows)}));
+  return{grid,cols,rows,tpl,cells};
+}
+function cellName(o,x,grid,rows){
+  if(x.slot)return"Center slot";
+  const RW=rows===3?["Back","Middle","Front"]:rows===2?["Back","Front"]:rows===1?["Bins"]:Array.from({length:rows},(_,i)=>i===0?"Back":i===rows-1?"Front":`Row ${i+1}`);
+  if(grid){const a=`${RW[x.r-1]} ${x.c}`;return x.w>1?`${RW[x.r-1]} ${x.c}–${x.c+x.w-1}`:x.h>1?`${RW[x.r-1]}–${RW[x.r+x.h-2]} ${x.c}`:a}
+  const side=x.c<=2?"left":"right",S1=x.c<=2?"L":"R",idx=x.c<=2?x.c:x.c-3;
+  if(x.w>1)return`${RW[x.r-1]} ${side}`;
+  if(x.h>1)return`${cap(side)} ${RW[x.r-1].toLowerCase()}–${RW[x.r+x.h-2].toLowerCase()}`;
+  return`${RW[x.r-1]} ${S1}${idx}`;
+}
+function divOf(b){if(b&&b.div&&+b.div.n>1)return{dir:b.div.dir==="v"?"v":"h",n:Math.min(6,+b.div.n)};if(b&&b.split)return{dir:"h",n:2};return{dir:"h",n:1}}
+function secName(dv,i){if(dv.n<2)return"";const h=dv.dir==="h";
+  const w=dv.n===2?(h?["back","front"]:["left","right"])[i]:dv.n===3?(h?["back","middle","front"]:["left","middle","right"])[i]:`${i+1} of ${dv.n}`;return` · ${w}`}
 function orgList(loc){const d=S.docs[loc].get("orgs");if(!d||!d.list)return[];return Object.entries(d.list).filter(([id,o])=>o&&!o.gone).map(([id,o])=>({...o,id})).sort((a,b)=>(a.ord||0)-(b.ord||0))}
 const RANK={Out:6,Low:5,Check:4,Half:3,Stocked:2,Extra:1};
 function itemMap(loc){const k="map:"+loc;if(S.itemsCache[k])return S.itemsCache[k];return S.itemsCache[k]=new Map(items(loc).map(i=>[i.id,i]))}
@@ -681,12 +722,11 @@ function secInfo(loc,sec){
 }
 function secLabel(loc,sec,inf){if(!sec)return"";if(sec.label)return sec.label;inf=inf||secInfo(loc,sec);
   const its=inf.its;if(!its.length)return"";
-  const sz=its[0].size||"";if(its.every(i=>(i.size||"")===sz))return(sz?sz+" ":"")+its.map(i=>dispName(i)).join(", ");   // same size: "1/2 Coupling, Tee"
+  const sz=its[0].size||"";if(its.every(i=>(i.size||"")===sz))return(sz?sz+" ":"")+its.map(i=>dispName(i)).join(", ");
   return its.map(i=>(i.size?i.size+" ":"")+dispName(i)).join(", ")}
-const halfName=(b,s)=>b.split?(s==="a"?" · back half":" · front half"):"";
 function binSecs(loc){const k="secs:"+loc;if(S.itemsCache[k])return S.itemsCache[k];const out=[];
-  for(const o of orgList(loc)){for(const [bid,,,,,nm] of orgShape(o).bins){const b=(o.bins||{})[bid]||{};
-    for(const s of b.split?["a","b"]:["a"]){const sec=b[s]||{};const inf=secInfo(loc,sec);out.push({o,bid,s,nm:nm+halfName(b,s),sec,inf,label:secLabel(loc,sec,inf)})}}}
+  for(const o of orgList(loc)){for(const x of orgShape(o).cells){const b=(o.bins||{})[x.id]||{};const dv=divOf(b);
+    for(let i=0;i<dv.n;i++){const s=SECKEYS[i];const sec=b[s]||{};const inf=secInfo(loc,sec);out.push({o,bid:x.id,s,nm:x.name+secName(dv,i),sec,inf,label:secLabel(loc,sec,inf)})}}}
   return S.itemsCache[k]=out}
 function binIndex(loc){const k="bins:"+loc;if(S.itemsCache[k])return S.itemsCache[k];const m=new Map();
   for(const x of binSecs(loc))for(const id of (x.sec.items||[]))if(!m.has(id))m.set(id,`${x.o.name} · ${x.nm}`);
@@ -694,68 +734,112 @@ function binIndex(loc){const k="bins:"+loc;if(S.itemsCache[k])return S.itemsCach
 function orgWrite(loc,patch){queueWrite(`${loc}/orgs`,S.docs[loc].has("orgs")?patch:deepMerge({list:{}},patch),S.docs[loc].has("orgs")?"update":"set")}
 function binWrite(loc,oid,bid,patch){orgWrite(loc,{list:{[oid]:{bins:{[bid]:patch}}}})}
 function orgGrid(o,mini){
-  const sh=orgShape(o),loc=curLoc();let h=`<div class="org${mini?" mini":""}"><div class="ogrid" style="grid-template-columns:repeat(${sh.cols},minmax(0,1fr))">`;
-  for(const [bid,c,r,cs,rs,nm] of sh.bins){const b=(o.bins||{})[bid]||{};
-    h+=`<div class="bin${b.split?" split":""}" style="grid-column:${c}/span ${cs};grid-row:${r}/span ${rs}">`+(b.split?["a","b"]:["a"]).map(s=>{
-      if(mini)return`<span class="sec st-none"></span>`;
-      const inf=secInfo(loc,b[s]),lab=secLabel(loc,b[s],inf);
-      return`<button class="sec st-${inf.lvl||"none"}" type="button" data-bin="${bid}" data-sec="${s}" aria-label="${esc(nm+halfName(b,s))}: ${esc(lab||"empty")}, ${inf.lvl||"not set"}"><span class="lab">${lab?esc(lab):`<i>${esc(nm)}${b.split?(s==="a"?" back":" front"):""}</i>`}</span>${inf.lvl?`<span class="st">${inf.lvl.toUpperCase()}</span>`:""}</button>`}).join("")+`</div>`}
-  return h+`</div><div class="front">Front · latches</div></div>`;
+  const sh=orgShape(o),loc=curLoc();
+  let h=`<div class="pk${sh.grid?" grid":""}${mini?" mini":""}"><div class="pk-in" style="grid-template-columns:${sh.tpl};grid-template-rows:repeat(${sh.rows},minmax(0,1fr))">`;
+  for(const x of sh.cells){const b=(o.bins||{})[x.id]||{};const dv=divOf(b);
+    h+=`<div class="bin ${dv.dir}${x.slot?" slot":""}" style="grid-column:${x.c}/span ${x.w};grid-row:${x.r}/span ${x.h}">`;
+    for(let i=0;i<dv.n;i++){const s=SECKEYS[i];
+      if(mini){h+=`<span class="bsec"></span>`;continue}
+      const inf=secInfo(loc,b[s]),lab=secLabel(loc,b[s],inf),nm=x.name+secName(dv,i);
+      h+=`<button class="bsec st-${inf.lvl||"none"}" type="button" data-bin="${esc(x.id)}" data-sec="${s}" aria-label="${esc(nm)}: ${esc(lab||"empty")}, ${inf.lvl||"not set"}"><span class="in"><span class="lab">${lab?esc(lab):(dv.n===1&&!x.slot?`<i>${esc(x.name)}</i>`:x.slot&&dv.n===1?`<i>Slot</i>`:"")}</span>${inf.lvl?`<span class="st">${inf.lvl.toUpperCase()}</span>`:""}</span></button>`}
+    h+=`</div>`}
+  h+=`</div><span class="latch" style="left:20%"></span><span class="latch" style="right:20%"></span><span class="pk-front">Front</span></div>`;
+  return h;
 }
 function renderBins(){
   const V=$("#vBins"),loc=curLoc(),list=orgList(loc);
   if(!list.some(o=>o.id===S.orgSel))S.orgSel=(list[0]||{}).id||null;
   let html=`<div class="rail" style="padding-top:12px">${list.map(o=>`<button class="chip" type="button" data-org="${esc(o.id)}" aria-pressed="${o.id===S.orgSel}">${esc(o.name)}</button>`).join("")}<button class="chip" type="button" data-act="orgNew">+ New organizer</button></div>`;
   if(!list.length){V.innerHTML=html+`<div class="empty"><h3>Map your Packouts</h3><p>Lay out each organizer the way it sits in the ${LOCNAME[loc].toLowerCase()}, say what goes in each bin, and see at a glance which bins are low.</p><button class="btn pri" type="button" data-act="orgNew">Add an organizer</button></div>`;return}
-  const o=list.find(x=>x.id===S.orgSel);const secs=binSecs(loc).filter(x=>x.o.id===o.id);const lows=secs.filter(x=>x.inf.low);
+  const o=list.find(x=>x.id===S.orgSel),sh=orgShape(o);const secs=binSecs(loc).filter(x=>x.o.id===o.id);const lows=secs.filter(x=>x.inf.low);
   html+=`<div class="summary"><span><b>${esc(o.name)}</b> · ${lows.length?`<b>${lows.length} low</b>`:"nothing low"}</span><button class="btn sm ghost" type="button" data-act="orgEdit">Edit</button></div>`;
   html+=orgGrid(o);
-  html+=`<div class="legend"><span><span class="k" style="background:var(--out);border-color:var(--out)"></span>Out</span><span><span class="k" style="background:var(--low);border-color:var(--low)"></span>Low</span><span><span class="k" style="border:2px solid var(--check)"></span>Check</span><span><span class="k" style="box-shadow:inset 0 -5px 0 var(--half)"></span>Half</span><span><span class="k" style="box-shadow:inset 0 -5px 0 var(--stocked)"></span>Stocked</span><span><span class="k" style="border-style:dashed"></span>Not set</span></div>`;
-  if(lows.length)html+=`<div class="ghead">Low in ${esc(o.name)}</div><div class="list">${lows.map(x=>`<div class="row"><button class="rbtn" type="button" data-bin="${x.bid}" data-sec="${x.s}"><span class="nm">${esc(x.label||x.nm)}<span class="cat">${esc(x.nm)}</span></span><span class="right"><span class="pill ${x.inf.lvl}">${x.inf.lvl}</span></span></button></div>`).join("")}</div>`;
-  html+=`<p class="upd" style="margin-top:12px">Tap a bin to say what's in it or update it. A bin turns orange or red when anything in it is Low or Out.</p>`;
+  if(!sh.grid)html+=`<div class="pkdims">Packout Organizer · 19.7 × 15.2 in outside · 18 × 12 in inside</div>`;
+  html+=`<div class="legend"><span><span class="k" style="background:var(--out);border-color:var(--out)"></span>Out</span><span><span class="k" style="background:var(--low);border-color:var(--low)"></span>Low</span><span><span class="k" style="border:2px solid var(--check)"></span>Check</span><span><span class="k" style="box-shadow:inset 0 -5px 0 var(--half)"></span>Half</span><span><span class="k" style="box-shadow:inset 0 -5px 0 var(--stocked)"></span>Stocked</span></div>`;
+  if(lows.length)html+=`<div class="ghead">Low in ${esc(o.name)}</div><div class="list">${lows.map(x=>`<div class="row"><button class="rbtn" type="button" data-bin="${esc(x.bid)}" data-sec="${x.s}"><span class="nm">${esc(x.label||x.nm)}<span class="cat">${esc(x.nm)}</span></span><span class="right"><span class="pill ${x.inf.lvl}">${x.inf.lvl}</span></span></button></div>`).join("")}</div>`;
+  html+=`<p class="upd" style="margin-top:12px">Tap a bin to say what's in it, update it, split it with dividers, or combine bins. A bin turns orange or red when anything in it is Low or Out.</p>`;
   V.innerHTML=html;
 }
 function orgSheet(o){
-  const loc=curLoc(),isNew=!o;let lay="o9";
+  const loc=curLoc(),isNew=!o;let lay="pk";
   openModal(`<div class="hd"><h2>${isNew?"New organizer":"Edit organizer"}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>
    <div class="field"><label for="o_name">Name</label><input id="o_name" value="${esc(o?o.name:`Packout ${orgList(loc).length+1}`)}" placeholder="e.g. PEX organizer" autocomplete="off"></div>
-   ${isNew?`<div class="field"><span class="lab">Layout</span>
-     <div class="seg" role="group" aria-label="Layout" id="o_lay"><button type="button" data-l="o9">9 bins (photo)</button><button type="button" data-l="grid">Even grid</button></div>
+   ${isNew?`<div class="field"><span class="lab">Type</span>
+     <div class="seg" role="group" aria-label="Type" id="o_lay"><button type="button" data-l="pk">Packout Organizer</button><button type="button" data-l="grid">Other (even grid)</button></div>
+     <span class="hint" id="o_hint"></span>
      <div class="two" id="o_grid" hidden><div class="field"><label for="o_cols">Bins across</label><select id="o_cols">${[2,3,4,5,6].map(n=>`<option ${n===4?"selected":""}>${n}</option>`).join("")}</select></div>
        <div class="field"><label for="o_rows">Rows</label><select id="o_rows">${[1,2,3,4].map(n=>`<option ${n===2?"selected":""}>${n}</option>`).join("")}</select></div></div>
-     <label class="chkrow"><input type="checkbox" id="o_split"> Also split each front bin in half</label>
-     <div id="o_prev"></div></div>`:`<p class="hint" style="margin:0">To change the layout, add a new organizer and delete this one. Any bin can be split or merged from the bin itself.</p>`}
+     <div id="o_prev"></div></div>`:`<p class="hint" style="margin:0">Change bins from the bins themselves: tap one to split it with dividers, combine it with the next bin, or break a large bin back into small ones.</p>`}
    <div class="err" id="o_err" hidden></div>
    <div class="btnrow stick"><button class="btn pri" type="button" id="o_save" style="flex:1">${isNew?"Add organizer":"Save"}</button>${isNew?"":`<button class="btn ghost" type="button" id="o_del">Delete</button>`}</div>`,sh=>{
     const q=x=>sh.querySelector(x);
-    const draft=()=>{const d={name:q("#o_name").value.trim(),layout:lay,cols:lay==="grid"?+q("#o_cols").value:5,rows:lay==="grid"?+q("#o_rows").value:3,bins:{}};
-      if(q("#o_split").checked){const shp=orgShape(d);for(const [bid,,r,,rs] of shp.bins)if(r+rs-1===shp.rows&&rs===1)d.bins[bid]={split:true}}return d};
-    const prev=()=>{if(!isNew)return;sh.querySelectorAll("#o_lay [data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lay));q("#o_grid").hidden=lay!=="grid";q("#o_prev").innerHTML=orgGrid(draft(),true)};
-    if(isNew){prev();q("#o_lay").onclick=e=>{const b=e.target.closest("[data-l]");if(b){lay=b.dataset.l;prev()}};["#o_cols","#o_rows","#o_split"].forEach(x=>q(x).onchange=prev)}
+    const draft=()=>({name:q("#o_name").value.trim(),layout:lay,cols:lay==="grid"?+q("#o_cols").value:undefined,rows:lay==="grid"?+q("#o_rows").value:undefined,bins:{}});
+    const prev=()=>{if(!isNew)return;sh.querySelectorAll("#o_lay [data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lay));q("#o_grid").hidden=lay!=="grid";
+      q("#o_hint").textContent=lay==="pk"?"19.7 × 15.2 in. 8 small bins in back and middle, a large bin across each front side, center slot for long bits. You can rearrange bins after.":"For other organizers: pick how many bins across and how many rows.";
+      q("#o_prev").innerHTML=orgGrid(draft(),true)};
+    if(isNew){prev();q("#o_lay").onclick=e=>{const b=e.target.closest("[data-l]");if(b){lay=b.dataset.l;prev()}};["#o_cols","#o_rows"].forEach(x=>q(x).onchange=prev)}
     q("#o_save").onclick=()=>{const name=q("#o_name").value.trim();if(!name){q("#o_err").hidden=false;q("#o_err").textContent="Give it a name.";return}
-      if(isNew){const d=draft();const id=uid("o");orgWrite(loc,{list:{[id]:{...d,name,ord:Date.now(),created:Date.now()}}});S.orgSel=id;toast(`Added ${name}`)}
+      if(isNew){const d=draft();const id=uid("o");const rec={name,layout:lay,ord:Date.now(),created:Date.now(),bins:{}};if(lay==="grid"){rec.cols=d.cols;rec.rows=d.rows}
+        orgWrite(loc,{list:{[id]:rec}});S.orgSel=id;toast(`Added ${name}`)}
       else{orgWrite(loc,{list:{[o.id]:{name}}});toast("Saved")}
       closeModal();scheduleRender()};
     const del=q("#o_del");if(del)del.onclick=()=>{closeModal();confirmSheet(`Delete ${o.name}?`,"The bin map goes away. Your items and stock levels stay in the inventory.","Delete",()=>{orgWrite(loc,{list:{[o.id]:{gone:true}}});S.orgSel=null;scheduleRender()},true)};
   });
 }
+// combine / break apart bins (real Packout bins are removable, so the layout can change)
+function cellAt(cells,c,r){return cells.find(x=>c>=x.c&&c<x.c+(x.w||1)&&r>=x.r&&r<x.r+(x.h||1))}
+function mergeOptions(o,cell){
+  const sh=orgShape(o),cells=sh.cells,out=[];if(cell.slot)return out;
+  if(cell.w>1||cell.h>1){out.push(["break","Break into small bins"]);return out}
+  const right=cellAt(cells,cell.c+1,cell.r),below=cellAt(cells,cell.c,cell.r+1);
+  const ok=n=>n&&!n.slot&&n.w===1&&n.h===1;
+  if(ok(right))out.push(["right",`Combine with ${right.name} (side by side)`]);
+  if(ok(below))out.push(["below",`Combine with ${below.name} (front to back)`]);
+  return out;
+}
+function applyMerge(loc,o,cell,how){
+  const sh=orgShape(o);let cells=sh.cells.map(({name,...x})=>x);const bins=o.bins||{};const patch={};
+  if(how==="break"){
+    cells=cells.filter(x=>x.id!==cell.id);let first=null;
+    for(let r=cell.r;r<cell.r+cell.h;r++)for(let c=cell.c;c<cell.c+cell.w;c++){const id=`r${r}c${c}`;cells.push({id,c,r,w:1,h:1});if(!first)first=id}
+    if(bins[cell.id])patch[first]=deepMerge({},bins[cell.id]);              // what was in the big bin stays with the first small one
+  }else{
+    const other=how==="right"?cellAt(sh.cells,cell.c+1,cell.r):cellAt(sh.cells,cell.c,cell.r+1);
+    cells=cells.filter(x=>x.id!==cell.id&&x.id!==other.id);
+    const nid=`m${cell.r}${cell.c}${how==="right"?"w":"h"}`;cells.push({id:nid,c:cell.c,r:cell.r,w:how==="right"?2:1,h:how==="below"?2:1});
+    if(bins[cell.id])patch[nid]=deepMerge({},bins[cell.id]);
+  }
+  cells.sort((a,b)=>a.r-b.r||a.c-b.c);
+  orgWrite(loc,{list:{[o.id]:{cells,...(Object.keys(patch).length?{bins:patch}:{})}}});
+}
 function binSheet(oid,bid,s){
   const loc=curLoc();S.orgSel=oid;
-  const cur=()=>{const o=orgList(loc).find(x=>x.id===oid);if(!o)return null;const def=orgShape(o).bins.find(x=>x[0]===bid);if(!def)return null;const b=(o.bins||{})[bid]||{};return{o,nm:def[5],b,sec:b[s]||{}}};
+  const cur=()=>{const o=orgList(loc).find(x=>x.id===oid);if(!o)return null;const cell=orgShape(o).cells.find(x=>x.id===bid);if(!cell)return null;const b=(o.bins||{})[bid]||{};const dv=divOf(b);
+    if(SECKEYS.indexOf(s)>=dv.n)s="a";return{o,cell,b,dv,sec:b[s]||{}}};
   const c0=cur();if(!c0)return;
   openModal(`<div class="hd"><div><h2 id="b_title"></h2><span class="upd" id="b_sub"></span></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
    <div class="field"><label for="b_label">What goes here</label><input id="b_label" value="${esc(c0.sec.label||"")}" placeholder="e.g. 1/2 PEX rings" autocomplete="off"><span class="hint">Optional. Add items below to track them by level.</span></div>
    <div id="b_body" style="display:flex;flex-direction:column;gap:12px"></div>
-   <div class="field"><label for="b_find">Items in this ${c0.b.split?"section":"bin"}</label><input id="b_find" type="search" placeholder="Search to add: 1/2 pex ring, 3/4 coupling…" autocomplete="off" autocorrect="off" spellcheck="false"><div class="list" id="b_res" hidden></div></div>
-   <div class="btnrow stick"><button class="btn pri" type="button" data-close style="flex:1">Done</button><button class="btn" type="button" id="b_split"></button></div>`,sh=>{
+   <div class="field"><label for="b_find">Items here</label><input id="b_find" type="search" placeholder="Search to add: 1/2 pex ring, 3/4 coupling…" autocomplete="off" autocorrect="off" spellcheck="false"><div class="list" id="b_res" hidden></div></div>
+   <div class="field"><span class="lab">Dividers in this bin</span>
+     <div class="divrow" id="b_dir"><button class="btn sm" type="button" data-dir="none">None</button><button class="btn sm" type="button" data-dir="h">═ Horizontal</button><button class="btn sm" type="button" data-dir="v">║ Vertical</button></div>
+     <div id="b_cntwrap"><span class="hint">Number of even sections (new sections start empty)</span><div class="cnt" id="b_cnt">${[2,3,4,5,6].map(n=>`<button class="btn sm" type="button" data-n="${n}">${n}</button>`).join("")}</div></div>
+     <div class="divprev" id="b_prev"></div></div>
+   <div class="field" id="b_mergewrap"><span class="lab">Bin size</span><div class="btnrow" id="b_merge"></div></div>
+   <div class="btnrow stick"><button class="btn pri" type="button" data-close style="flex:1">Done</button></div>`,sh=>{
     const q=x=>sh.querySelector(x);
-    const draw=()=>{const c=cur();if(!c){closeModal();return}const inf=secInfo(loc,c.sec);
-      q("#b_title").textContent=c.nm+halfName(c.b,s);q("#b_sub").textContent=c.o.name;
-      q("#b_split").textContent=c.b.split?"Make it one bin":"Split into 2 sections";
+    const draw=()=>{const c=cur();if(!c){closeModal();return}const inf=secInfo(loc,c.sec);const i=SECKEYS.indexOf(s);
+      q("#b_title").textContent=c.cell.name+secName(c.dv,i);q("#b_sub").textContent=c.o.name+(c.dv.n>1?` · section ${i+1} of ${c.dv.n}`:"");
+      if(document.activeElement!==q("#b_label"))q("#b_label").value=c.sec.label||"";
       q("#b_body").innerHTML=inf.its.length
         ?`<div class="field"><span class="lab">Tap an item to update it</span><div class="list">${inf.its.map(it=>rowHTML(it,{showCat:true})).join("")}</div></div>`
-        :`<div class="field"><span class="lab">Level for this ${c.b.split?"section":"bin"}</span><div class="lvls" id="b_lv">${LEVELS.map(l=>`<button class="lv" type="button" data-blv="${l}" aria-pressed="${c.sec.lvl===l}">${l}</button>`).join("")}</div>
+        :`<div class="field"><span class="lab">Level</span><div class="lvls">${LEVELS.map(l=>`<button class="lv" type="button" data-blv="${l}" aria-pressed="${c.sec.lvl===l}">${l}</button>`).join("")}</div>
            <button class="btn sm chk" type="button" data-blv="Check" aria-pressed="${c.sec.lvl==="Check"}">? Check</button></div>`;
+      const dirNow=c.dv.n>1?c.dv.dir:"none";
+      sh.querySelectorAll("#b_dir [data-dir]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.dir===dirNow));
+      q("#b_cntwrap").hidden=dirNow==="none";sh.querySelectorAll("#b_cnt [data-n]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.n===c.dv.n));
+      q("#b_prev").className="divprev "+c.dv.dir;q("#b_prev").innerHTML=Array.from({length:c.dv.n},(_,k)=>`<span class="${k===i?"me":""}"></span>`).join("");
+      const mo=mergeOptions(c.o,c.cell);q("#b_mergewrap").hidden=!mo.length;q("#b_merge").innerHTML=mo.map(([k,l])=>`<button class="btn sm" type="button" data-merge="${k}">${esc(l)}</button>`).join("");
       drawRes()};
     const drawRes=()=>{const c=cur();if(!c)return;const toks=tokenize(q("#b_find").value);const R=q("#b_res");
       if(!toks.length){R.hidden=true;R.innerHTML="";return}
@@ -771,8 +855,13 @@ function binSheet(oid,bid,s){
         binWrite(loc,oid,bid,{[s]:{items:list}});const it=findItem(loc,id);if(i<0&&it&&it.hidden)writeItem(it,{hidden:false});draw();scheduleRender();return}
       const lv=e.target.closest("[data-blv]");
       if(lv){const c=cur();const v=c.sec.lvl===lv.dataset.blv?null:lv.dataset.blv;binWrite(loc,oid,bid,{[s]:{lvl:v,lvlAt:Date.now()}});draw();scheduleRender();return}
-      if(e.target.closest("#b_split")){const c=cur();saveLabel();binWrite(loc,oid,bid,{split:!c.b.split});closeModal();scheduleRender();
-        toast(c.b.split?`${c.nm} is one bin again`:`${c.nm} split into back and front halves`);return}
+      const dr=e.target.closest("[data-dir]");
+      if(dr){const c=cur();saveLabel();const d=dr.dataset.dir;
+        binWrite(loc,oid,bid,d==="none"?{div:{dir:c.dv.dir,n:1},split:false}:{div:{dir:d,n:c.dv.n>1?c.dv.n:2},split:false});if(d==="none")s="a";draw();scheduleRender();return}
+      const cn=e.target.closest("[data-n]");
+      if(cn){const c=cur();saveLabel();const n=+cn.dataset.n;binWrite(loc,oid,bid,{div:{dir:c.dv.n>1?c.dv.dir:"h",n},split:false});if(SECKEYS.indexOf(s)>=n)s="a";draw();scheduleRender();return}
+      const mg=e.target.closest("[data-merge]");
+      if(mg){const c=cur();saveLabel();applyMerge(loc,c.o,c.cell,mg.dataset.merge);closeModal();scheduleRender();toast(mg.dataset.merge==="break"?"Broken into small bins":"Bins combined");return}
       if(e.target.closest(".row")){onMainClick(e);setTimeout(()=>{draw();scheduleRender()},0)}
     });
     draw();

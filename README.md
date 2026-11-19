@@ -7,7 +7,7 @@ There are two ways to run it, and they don't do the same things:
 | | Inside Claude (`claude-artifact/`) | GitHub Pages (`index.html`) |
 |---|---|---|
 | Van + Shop inventories, search, stock levels, refill + "To check" lists, setup hiding, add/hide | Yes | Yes |
-| Packout bin blueprints (Bins tab): lay out each organizer, say what goes in each bin, see which bins are low | Yes | Yes |
+| Packout bin blueprints (Bins tab): top-down Packout Organizer drawn at real size (19.7 × 15.2 in outside, 18 × 12 in inside, 8 small + 2 large bins, center slot), split bins horizontally or vertically into 2–6 sections, combine or break bins, see which bins are low | Yes | Yes |
 | Works with no signal | Yes, once the page is open | Yes, after the first visit (service worker), and can be added to the home screen |
 | Sync between your phones | Yes | No, each phone keeps its own copy |
 | Crew can view the shop and send requests | Yes | No |
@@ -107,7 +107,7 @@ npm test
   - the crew can only read the shop and send requests
   - changes made offline survive a reload
   - two phones changing the same item produce a visible conflict, not a silent overwrite
-- `tests/bins.test.js` checks the Bins tab: adding an organizer with the 9-bin layout (front row is 2 wide bins), splitting bins, labeling them, linking items, bin colors following stock levels, label-only bins on the refill list, and the bin map surviving a reload.
+- `tests/bins.test.js` checks the Bins tab: the Packout Organizer layout and real proportions, labels and linked items, horizontal/vertical dividers with even empty sections, combining and breaking bins, refill integration, and saving after reload.
 - `tests/standalone-offline.test.js` serves `index.html` like GitHub Pages, cuts the network, and checks the app still loads and saves changes.
 
 ## How the data is stored
