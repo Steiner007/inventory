@@ -107,7 +107,7 @@ npm test
   - the crew can only read the shop and send requests
   - changes made offline survive a reload
   - two phones changing the same item produce a visible conflict, not a silent overwrite
-- `tests/bins.test.js` checks the Bins tab: adding an organizer with the 11-bin layout, splitting bins, labeling them, linking items, bin colors following stock levels, label-only bins on the refill list, and the bin map surviving a reload.
+- `tests/bins.test.js` checks the Bins tab: adding an organizer with the 9-bin layout (front row is 2 wide bins), splitting bins, labeling them, linking items, bin colors following stock levels, label-only bins on the refill list, and the bin map surviving a reload.
 - `tests/standalone-offline.test.js` serves `index.html` like GitHub Pages, cuts the network, and checks the app still loads and saves changes.
 
 ## How the data is stored

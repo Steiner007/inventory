@@ -653,13 +653,19 @@ async function resolveNames(root){
 }
 
 /* ================= Packout organizers: bin blueprints ================= */
-// Layout from the photo: back row 4 small, middle row 2 wide, front row (by the latches) 4 small, one long bin down the center.
+// Layout from the photo: back row 4 small, middle row 2 wide, front row (by the latches) 2 wide, one long bin down the center.
+const ORG_O9={cols:5,rows:3,bins:[
+  ["b1",1,1,1,1,"Back 1"],["b2",2,1,1,1,"Back 2"],["long",3,1,1,3,"Long bin"],["b3",4,1,1,1,"Back 3"],["b4",5,1,1,1,"Back 4"],
+  ["ml",1,2,2,1,"Middle left"],["mr",4,2,2,1,"Middle right"],
+  ["fl",1,3,2,1,"Front left"],["fr",4,3,2,1,"Front right"]]};
+// Earlier default (4 small front bins); kept so organizers made with it still show correctly.
 const ORG_O11={cols:5,rows:3,bins:[
   ["b1",1,1,1,1,"Back 1"],["b2",2,1,1,1,"Back 2"],["long",3,1,1,3,"Long bin"],["b3",4,1,1,1,"Back 3"],["b4",5,1,1,1,"Back 4"],
   ["ml",1,2,2,1,"Middle left"],["mr",4,2,2,1,"Middle right"],
   ["f1",1,3,1,1,"Front 1"],["f2",2,3,1,1,"Front 2"],["f3",4,3,1,1,"Front 3"],["f4",5,3,1,1,"Front 4"]]};
 function orgShape(o){
-  if(!o||o.layout==="o11")return ORG_O11;
+  if(!o||o.layout==="o9")return ORG_O9;
+  if(o.layout==="o11")return ORG_O11;
   const cols=+o.cols||4,rows=+o.rows||2,bins=[];
   for(let r=1;r<=rows;r++)for(let c=1;c<=cols;c++)bins.push([`r${r}c${c}`,c,r,1,1,rows===1?`Bin ${c}`:r===1?`Back ${c}`:r===rows?`Front ${c}`:`Row ${r} · ${c}`]);
   return{cols,rows,bins};
@@ -710,14 +716,14 @@ function renderBins(){
   V.innerHTML=html;
 }
 function orgSheet(o){
-  const loc=curLoc(),isNew=!o;let lay="o11";
+  const loc=curLoc(),isNew=!o;let lay="o9";
   openModal(`<div class="hd"><h2>${isNew?"New organizer":"Edit organizer"}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>
    <div class="field"><label for="o_name">Name</label><input id="o_name" value="${esc(o?o.name:`Packout ${orgList(loc).length+1}`)}" placeholder="e.g. PEX organizer" autocomplete="off"></div>
    ${isNew?`<div class="field"><span class="lab">Layout</span>
-     <div class="seg" role="group" aria-label="Layout" id="o_lay"><button type="button" data-l="o11">11 bins (photo)</button><button type="button" data-l="grid">Even grid</button></div>
+     <div class="seg" role="group" aria-label="Layout" id="o_lay"><button type="button" data-l="o9">9 bins (photo)</button><button type="button" data-l="grid">Even grid</button></div>
      <div class="two" id="o_grid" hidden><div class="field"><label for="o_cols">Bins across</label><select id="o_cols">${[2,3,4,5,6].map(n=>`<option ${n===4?"selected":""}>${n}</option>`).join("")}</select></div>
        <div class="field"><label for="o_rows">Rows</label><select id="o_rows">${[1,2,3,4].map(n=>`<option ${n===2?"selected":""}>${n}</option>`).join("")}</select></div></div>
-     <label class="chkrow"><input type="checkbox" id="o_split" checked> Split the front row into 2 sections</label>
+     <label class="chkrow"><input type="checkbox" id="o_split"> Also split each front bin in half</label>
      <div id="o_prev"></div></div>`:`<p class="hint" style="margin:0">To change the layout, add a new organizer and delete this one. Any bin can be split or merged from the bin itself.</p>`}
    <div class="err" id="o_err" hidden></div>
    <div class="btnrow stick"><button class="btn pri" type="button" id="o_save" style="flex:1">${isNew?"Add organizer":"Save"}</button>${isNew?"":`<button class="btn ghost" type="button" id="o_del">Delete</button>`}</div>`,sh=>{

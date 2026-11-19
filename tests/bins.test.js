@@ -1,4 +1,4 @@
-// Packout bin blueprint: add an organizer (11-bin layout, front row split), put items in bins,
+// Packout bin blueprint: add an organizer (9-bin layout: front row is 2 wide bins), put items in bins,
 // check that bin colors follow stock levels, label-only bins show on Refill, and items show which bin they live in.
 const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
 const root=path.join(__dirname,'..');
@@ -12,14 +12,16 @@ server.listen(0,async()=>{
   await p.click('#tabs [data-tab=bins]');
   ok(await p.isVisible('#vBins .empty'),'empty state offers to add an organizer');
   await p.click('#vBins .empty [data-act=orgNew]');
-  ok(await p.locator('#o_prev .sec').count()===15,'preview: 11 bins with 4 front bins split = 15 sections');
+  ok(await p.locator('#o_prev .sec').count()===9,'preview: 9 bins, front row is 2 wide sections');
+  await p.check('#o_split');ok(await p.locator('#o_prev .sec').count()===11,'optional: split each front bin in half');await p.uncheck('#o_split');
   await p.fill('#o_name','PEX Packout');await p.click('#o_save');await p.waitForTimeout(150);
-  ok(await p.locator('#vBins .ogrid .sec').count()===15,'blueprint drawn with 15 sections');
-  // label-only bin: Front 1 back half -> Low
-  await p.click('#vBins .sec[data-bin=f1][data-sec=a]');await p.fill('#b_label','1/2 PEX rings');await p.press('#b_label','Enter');
+  ok(await p.locator('#vBins .ogrid .sec').count()===9,'blueprint drawn with 9 bins');
+  ok(await p.locator('#vBins .sec[data-bin=fl]').count()===1&&await p.locator('#vBins .sec[data-bin=fr]').count()===1,'front row: Front left and Front right');
+  // label-only bin: Front left -> Low
+  await p.click('#vBins .sec[data-bin=fl]');await p.fill('#b_label','1/2 PEX rings');await p.press('#b_label','Enter');
   await p.click('[data-blv=Low]');await p.click('.sheet .stick [data-close]');await p.waitForTimeout(150);
-  ok(await p.locator('#vBins .sec[data-bin=f1][data-sec=a].st-Low').count()===1,'label-only bin turns Low (orange)');
-  ok((await p.textContent('#vBins .sec[data-bin=f1][data-sec=a]')).includes('1/2 PEX rings'),'bin shows its label');
+  ok(await p.locator('#vBins .sec[data-bin=fl].st-Low').count()===1,'label-only bin turns Low (orange)');
+  ok((await p.textContent('#vBins .sec[data-bin=fl]')).includes('1/2 PEX rings'),'bin shows its label');
   // linked items: Middle right gets two items; worst level wins
   await p.click('#vBins .sec[data-bin=mr]');await p.fill('#b_find','1/2 pex coupling');await p.waitForTimeout(200);
   await p.locator('#b_res .pick').first().click();await p.fill('#b_find','1/2 pex tee');await p.waitForTimeout(200);await p.locator('#b_res .pick').first().click();
@@ -40,8 +42,12 @@ server.listen(0,async()=>{
   ok(await p.locator('#vBins .sec[data-bin=b1]').count()===2,'any bin can be split');
   // survives reload
   await p.reload();await p.waitForTimeout(400);await p.click('#tabs [data-tab=bins]');
-  ok(await p.locator('#vBins .sec[data-bin=f1][data-sec=a].st-Low').count()===1&&await p.locator('#vBins .sec[data-bin=b1]').count()===2,'bin map saved after reload');
+  ok(await p.locator('#vBins .sec[data-bin=fl].st-Low').count()===1&&await p.locator('#vBins .sec[data-bin=b1]').count()===2,'bin map saved after reload');
   ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no sideways scroll at 360px');
+  // organizers made with the earlier 11-bin layout still show correctly
+  await p.evaluate(()=>{orgWrite('van',{list:{old1:{name:'Old layout',layout:'o11',ord:1,bins:{f2:{a:{label:'Old front 2',lvl:'Out'}}}}}});renderAll();});
+  await p.click('#vBins [data-org=old1]');await p.waitForTimeout(100);
+  ok(await p.locator('#vBins .ogrid .sec').count()===11&&(await p.textContent('#vBins .sec[data-bin=f2]')).includes('Old front 2'),'old 11-bin organizers keep their bins');
   ok(!errs.length,'no page errors '+errs.join('; '));
   await b.close();server.close();process.exit(fails?1:0);
 });
